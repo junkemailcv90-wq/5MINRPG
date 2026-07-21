@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Character Sheet</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --line: #dddddd;
+      --muted: #666666;
+      --chip: #f5f5f5;
+      --active-roll-color: #dff5df;
+      --active-roll-border: #9fd39f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    h1, h2 {
+      margin: 0 0 9px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 11px;
+      margin-bottom: 11px;
+      overflow-x: auto;
+    }
+
+    .summary-card {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+      white-space: nowrap;
+    }
+
+    .summary-value {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .summary-total .summary-value {
+      font-size: 23px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 5px 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .button:hover,
+    .roll-btn:hover {
+      background: #fafafa;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 11px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 9px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .stat label {
+      font-weight: 600;
+    }
+
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 5px;
+      background: var(--chip);
+    }
+
+    .stepper button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      padding: 0 4px;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .stepper span {
+      min-width: 22px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    .groups {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .list {
+      display: grid;
+      gap: 9px;
+      margin-top: 8px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .sheet-select {
+      width: 140px;
+      flex: 0 0 140px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .roll-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 5px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text);
+      font: inherit;
+      white-space: nowrap;
+      min-width: 132px;
+      flex: 1 1 auto;
+      text-align: left;
+    }
+
+    .roll-btn.active-roll {
+      background: var(--active-roll-color);
+      border-color: var(--active-roll-border);
+    }
+
+    .proficiency-bonus {
+      width: 62px;
+      flex: 0 0 62px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    details.adjust-sheet,
+    details.level-up-sheet {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 12px 12px;
+      background: #fff;
+    }
+
+    details.adjust-sheet > summary,
+    details.level-up-sheet > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 0;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    details.adjust-sheet > summary::-webkit-details-marker,
+    details.level-up-sheet > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .adjust-body,
+    .level-up-body {
+      display: grid;
+      gap: 11px;
+    }
+
+    .adjust-row,
+    .level-up-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .adjust-state {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .adjust-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .adjust-field input[type="number"] {
+      width: 96px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .adjust-field input[type="color"] {
+      width: 44px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .feat-display {
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      font-weight: 600;
+    }
+
+    .feat-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .feat-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .feat-option input {
+      margin-top: 2px;
+    }
+
+    .feat-text {
+      display: grid;
+      gap: 2px;
+    }
+
+    .feat-name {
+      font-weight: 600;
+    }
+
+    .feat-desc {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .plain-display {
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    @media (max-width: 820px) {
+      .item {
+        flex-wrap: wrap;
+      }
+
+      .sheet-select {
+        flex: 0 0 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>Stats</h1>
+      <div class="stats">
+        <div class="stat">
+          <label for="hp">Hit Points</label>
+          <div class="stepper">
+            <button type="button" aria-label="Decrease Hit Points" onclick="changeValue('hp', -1)">←</button>
+            <span id="hp">6</span>
+            <button type="button" aria-label="Increase Hit Points" onclick="changeValue('hp', 1)">→</button>
+          </div>
+        </div>
+
+        <div class="stat">
+          <label for="spells">Spells</label>
+          <div class="stepper">
+            <button type="button" aria-label="Decrease Spells" onclick="changeValue('spells', -1)">←</button>
+            <span id="spells">6</span>
+            <button type="button" aria-label="Increase Spells" onclick="changeValue('spells', 1)">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="groups">
+      <div class="panel">
+        <h2>Affinities</h2>
+        <div class="list">
+          <div class="item">
+            <select class="sheet-select affinity-select" id="toughness" onchange="updateAffinity('Toughness', this.value)">
+              <option value="Average" selected>Average</option>
+              <option value="Strong">Strong</option>
+              <option value="Weak">Weak</option>
+            </select>
+            <button class="roll-btn" id="toughness-button" type="button" onclick="rollAffinity('Toughness')">Toughness</button>
+          </div>
+
+          <div class="item">
+            <select class="sheet-select affinity-select" id="skill" onchange="updateAffinity('Skill', this.value)">
+              <option value="Average" selected>Average</option>
+              <option value="Strong">Strong</option>
+              <option value="Weak">Weak</option>
+            </select>
+            <button class="roll-btn" id="skill-button" type="button" onclick="rollAffinity('Skill')">Skill</button>
+          </div>
+
+          <div class="item">
+            <select class="sheet-select affinity-select" id="magic" onchange="updateAffinity('Magic', this.value)">
+              <option value="Average" selected>Average</option>
+              <option value="Strong">Strong</option>
+              <option value="Weak">Weak</option>
+            </select>
+            <button class="roll-btn" id="magic-button" type="button" onclick="rollAffinity('Magic')">Magic</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h1>Roll Summary</h1>
+        <div class="summary">
+          <div class="summary-card">
+            <div class="summary-label">Affinity</div>
+            <div class="summary-value" id="latest-affinity-display">—</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Proficiency</div>
+            <div class="summary-value" id="latest-proficiency-display">—</div>
+          </div>
+
+          <div class="summary-card summary-total">
+            <div class="summary-label">Total</div>
+            <div class="summary-value" id="latest-total-display">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Proficiencies</h2>
+        <div class="list">
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="offense">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="offense-button" type="button" onclick="rollProficiency('Offense', 'offense')">Offense</button>
+            <input class="proficiency-bonus" id="offense-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="defense">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="defense-button" type="button" onclick="rollProficiency('Defense', 'defense')">Defense</button>
+            <input class="proficiency-bonus" id="defense-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="tactics">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="tactics-button" type="button" onclick="rollProficiency('Tactics', 'tactics')">Tactics</button>
+            <input class="proficiency-bonus" id="tactics-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="charm">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="charm-button" type="button" onclick="rollProficiency('Charm', 'charm')">Charm</button>
+            <input class="proficiency-bonus" id="charm-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="intimidation">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="intimidation-button" type="button" onclick="rollProficiency('Intimidation', 'intimidation')">Intimidation</button>
+            <input class="proficiency-bonus" id="intimidation-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="empathy">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="empathy-button" type="button" onclick="rollProficiency('Empathy', 'empathy')">Empathy</button>
+            <input class="proficiency-bonus" id="empathy-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="survival">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="survival-button" type="button" onclick="rollProficiency('Survival', 'survival')">Survival</button>
+            <input class="proficiency-bonus" id="survival-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="perception">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="perception-button" type="button" onclick="rollProficiency('Perception', 'perception')">Perception</button>
+            <input class="proficiency-bonus" id="perception-bonus" type="number" value="0" step="1" />
+          </div>
+
+          <div class="item">
+            <select class="sheet-select proficiency-select" id="stealth">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <button class="roll-btn" id="stealth-button" type="button" onclick="rollProficiency('Stealth', 'stealth')">Stealth</button>
+            <input class="proficiency-bonus" id="stealth-bonus" type="number" value="0" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Feat</h2>
+        <div class="plain-display" id="feat-display">Select one Feat after leveling up.</div>
+      </div>
+
+      <details class="level-up-sheet">
+        <summary>Level Up</summary>
+        <div class="level-up-body">
+          <div class="level-up-row">
+            <button class="button" type="button" id="bonus-visibility-toggle-button" onclick="toggleProficiencyBonuses()">
+              Show Proficiency bonuses
+            </button>
+          </div>
+
+          <div>
+            <h2>Feats</h2>
+            <div class="feat-options">
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Certainty">
+                <div class="feat-text">
+                  <div class="feat-name">Certainty</div>
+                  <div class="feat-desc">your next d20 roll is a 15</div>
+                </div>
+              </label>
+
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Luck">
+                <div class="feat-text">
+                  <div class="feat-name">Luck</div>
+                  <div class="feat-desc">reroll your last roll</div>
+                </div>
+              </label>
+
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Reserves">
+                <div class="feat-text">
+                  <div class="feat-name">Reserves</div>
+                  <div class="feat-desc">replenish half your health or half your magic</div>
+                </div>
+              </label>
+
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Guidance">
+                <div class="feat-text">
+                  <div class="feat-name">Guidance</div>
+                  <div class="feat-desc">Chosen Ally’s next d20 roll is a 15.</div>
+                </div>
+              </label>
+
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Blessing">
+                <div class="feat-text">
+                  <div class="feat-name">Blessing</div>
+                  <div class="feat-desc">Chosen Ally rerolls their last roll</div>
+                </div>
+              </label>
+
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Healing">
+                <div class="feat-text">
+                  <div class="feat-name">Healing</div>
+                  <div class="feat-desc">replenish half your Chosen Ally’s health or magic</div>
+                </div>
+              </label>
+
+              <label class="feat-option">
+                <input type="radio" name="feat" value="Prophecy">
+                <div class="feat-text">
+                  <div class="feat-name">Prophecy</div>
+                  <div class="feat-desc">DM answers one lore question.</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="adjust-sheet" id="adjust-sheet">
+        <summary>Adjust Sheet</summary>
+        <div class="adjust-body">
+          <div class="adjust-state" id="sheet-lock-state">Selectors are visible.</div>
+
+          <div class="adjust-field">
+            <label for="auto-clear-seconds">Automatically clear rolls after ___ seconds</label>
+            <input id="auto-clear-seconds" type="number" min="0" step="1" value="0" onchange="updateAutoClearSeconds()" />
+          </div>
+
+          <div class="adjust-field">
+            <label for="active-color-picker">Set Active Color</label>
+            <input id="active-color-picker" type="color" value="#dff5df" />
+            <button class="button" type="button" onclick="setActiveColor()">Set Active Color</button>
+          </div>
+
+          <div class="adjust-row">
+            <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
+              Hide Selectors
+            </button>
+            <button class="button" type="button" onclick="resetDropdowns()">Reset</button>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    const MAX_BY_AFFINITY = {
+      Weak: 4,
+      Average: 8,
+      Strong: 12
+    };
+
+    const ITEM_NAMES = {
+      toughness: "Toughness",
+      skill: "Skill",
+      magic: "Magic",
+      offense: "Offense",
+      defense: "Defense",
+      tactics: "Tactics",
+      charm: "Charm",
+      intimidation: "Intimidation",
+      empathy: "Empathy",
+      survival: "Survival",
+      perception: "Perception",
+      stealth: "Stealth"
+    };
+
+    const AFFINITY_IDS = ["toughness", "skill", "magic"];
+    const PROFICIENCY_IDS = ["offense", "defense", "tactics", "charm", "intimidation", "empathy", "survival", "perception", "stealth"];
+    const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS];
+
+    const state = {
+      hp: 6,
+      spells: 6,
+      latestAffinityRoll: null,
+      latestProficiencyRoll: null,
+      selectorsVisible: true,
+      proficiencyBonusesVisible: false,
+      autoClearSeconds: 0,
+      selectedFeatText: null
+    };
+
+    let autoClearTimer = null;
+
+    function render(id) {
+      document.getElementById(id).textContent = state[id];
+    }
+
+    function renderLatestRolls() {
+      const affinityDisplay = document.getElementById("latest-affinity-display");
+      const proficiencyDisplay = document.getElementById("latest-proficiency-display");
+      const totalDisplay = document.getElementById("latest-total-display");
+
+      affinityDisplay.textContent = state.latestAffinityRoll ?? "—";
+      proficiencyDisplay.textContent = state.latestProficiencyRoll ?? "—";
+
+      if (state.latestAffinityRoll !== null && state.latestProficiencyRoll !== null) {
+        totalDisplay.textContent = state.latestAffinityRoll + state.latestProficiencyRoll;
+      } else {
+        totalDisplay.textContent = "—";
+      }
+    }
+
+    function setButtonLabel(id, label) {
+      document.getElementById(`${id}-button`).textContent = label;
+    }
+
+    function setButtonActive(id, active) {
+      document.getElementById(`${id}-button`).classList.toggle("active-roll", active);
+    }
+
+    function clearCategoryHighlights(ids) {
+      for (const id of ids) {
+        setButtonActive(id, false);
+      }
+    }
+
+    function clearAllButtonStates() {
+      for (const id of ALL_IDS) {
+        setButtonLabel(id, ITEM_NAMES[id]);
+        setButtonActive(id, false);
+      }
+    }
+
+    function clearRolls() {
+      state.latestAffinityRoll = null;
+      state.latestProficiencyRoll = null;
+      clearAllButtonStates();
+      renderLatestRolls();
+      if (autoClearTimer !== null) {
+        clearTimeout(autoClearTimer);
+        autoClearTimer = null;
+      }
+    }
+
+    function scheduleAutoClear() {
+      if (autoClearTimer !== null) {
+        clearTimeout(autoClearTimer);
+        autoClearTimer = null;
+      }
+
+      if (state.autoClearSeconds > 0) {
+        autoClearTimer = setTimeout(() => {
+          clearRolls();
+        }, state.autoClearSeconds * 1000);
+      }
+    }
+
+    function updateAutoClearSeconds() {
+      const raw = Number(document.getElementById("auto-clear-seconds").value);
+      state.autoClearSeconds = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+      scheduleAutoClear();
+    }
+
+    function setActiveColor() {
+      const color = document.getElementById("active-color-picker").value;
+      document.documentElement.style.setProperty("--active-roll-color", color);
+      document.documentElement.style.setProperty("--active-roll-border", color);
+    }
+
+    function getMax(id) {
+      if (id === "hp") {
+        const affinity = document.getElementById("toughness").value;
+        return MAX_BY_AFFINITY[affinity];
+      }
+
+      if (id === "spells") {
+        const affinity = document.getElementById("magic").value;
+        return MAX_BY_AFFINITY[affinity];
+      }
+
+      return Infinity;
+    }
+
+    function changeValue(id, delta) {
+      const max = getMax(id);
+      state[id] = Math.max(0, Math.min(max, state[id] + delta));
+      render(id);
+    }
+
+    function updateAffinity(name, value) {
+      if (name === "Toughness") {
+        const max = MAX_BY_AFFINITY[value];
+        if (state.hp > max) {
+          state.hp = max;
+          render("hp");
+        }
+      }
+
+      if (name === "Magic") {
+        const max = MAX_BY_AFFINITY[value];
+        if (state.spells > max) {
+          state.spells = max;
+          render("spells");
+        }
+      }
+    }
+
+    function rollDie(sides) {
+      return Math.floor(Math.random() * sides) + 1;
+    }
+
+    function getProficiencyBonus(selectId) {
+      const raw = Number(document.getElementById(`${selectId}-bonus`).value);
+      return Number.isFinite(raw) ? raw : 0;
+    }
+
+    function formatProficiencyLabel(name, rawText, bonus) {
+      return bonus !== 0 ? `${name}: ${rawText} + ${bonus}` : `${name}: ${rawText}`;
+    }
+
+    function rollAffinity(name) {
+      const selectId = name.toLowerCase();
+      const rank = document.getElementById(selectId).value;
+      const sides = MAX_BY_AFFINITY[rank];
+      const roll = rollDie(sides);
+
+      clearCategoryHighlights(AFFINITY_IDS);
+      state.latestAffinityRoll = roll;
+      setButtonLabel(selectId, `${ITEM_NAMES[selectId]}: (${roll})`);
+      setButtonActive(selectId, true);
+      renderLatestRolls();
+      scheduleAutoClear();
+    }
+
+    function rollProficiency(name, selectId) {
+      const rank = document.getElementById(selectId).value;
+      const bonus = getProficiencyBonus(selectId);
+      let result = null;
+      let rawText = "";
+
+      if (rank === "Average") {
+        const roll = rollDie(20);
+        result = roll + bonus;
+        rawText = `(${roll})`;
+      } else {
+        const first = rollDie(20);
+        const second = rollDie(20);
+        const kept = rank === "Strong" ? Math.max(first, second) : Math.min(first, second);
+        result = kept + bonus;
+        rawText = `(${first}, ${second})`;
+      }
+
+      clearCategoryHighlights(PROFICIENCY_IDS);
+      state.latestProficiencyRoll = result;
+      setButtonLabel(selectId, formatProficiencyLabel(ITEM_NAMES[selectId], rawText, bonus));
+      setButtonActive(selectId, true);
+      renderLatestRolls();
+      scheduleAutoClear();
+    }
+
+    function setSelectorsVisible(visible) {
+      const selects = document.querySelectorAll(".sheet-select");
+
+      for (const select of selects) {
+        select.style.display = visible ? "" : "none";
+      }
+
+      document.getElementById("visibility-toggle-button").textContent =
+        visible ? "Hide Selectors" : "Show Selectors";
+
+      document.getElementById("sheet-lock-state").textContent =
+        visible ? "Selectors are visible." : "Selectors are hidden.";
+    }
+
+    function toggleSelectors() {
+      state.selectorsVisible = !state.selectorsVisible;
+      setSelectorsVisible(state.selectorsVisible);
+    }
+
+    function setProficiencyBonusesVisible(visible) {
+      const inputs = document.querySelectorAll(".proficiency-bonus");
+
+      for (const input of inputs) {
+        input.style.display = visible ? "" : "none";
+      }
+
+      document.getElementById("bonus-visibility-toggle-button").textContent =
+        visible ? "Hide Proficiency bonuses" : "Show Proficiency bonuses";
+    }
+
+    function toggleProficiencyBonuses() {
+      state.proficiencyBonusesVisible = !state.proficiencyBonusesVisible;
+      setProficiencyBonusesVisible(state.proficiencyBonusesVisible);
+    }
+
+    function updateFeatDisplay() {
+      const chosen = document.querySelector('input[name="feat"]:checked');
+      const display = document.getElementById("feat-display");
+
+      if (!chosen) {
+        state.selectedFeatText = null;
+        display.textContent = "Select one Feat after leveling up.";
+        return;
+      }
+
+      const label = chosen.closest("label");
+      const text = label ? label.innerText.replace(/\s+/g, " ").trim() : chosen.value;
+      state.selectedFeatText = text;
+      display.textContent = text;
+    }
+
+    function resetFeatSelection() {
+      const radios = document.querySelectorAll('input[name="feat"]');
+      for (const radio of radios) {
+        radio.checked = false;
+      }
+      updateFeatDisplay();
+    }
+
+    function resetDropdowns() {
+      const selects = document.querySelectorAll(".sheet-select");
+      for (const select of selects) {
+        select.value = "Average";
+      }
+
+      updateAffinity("Toughness", document.getElementById("toughness").value);
+      updateAffinity("Magic", document.getElementById("magic").value);
+      resetFeatSelection();
+    }
+
+    function bindFeatRadios() {
+      const radios = document.querySelectorAll('input[name="feat"]');
+      radios.forEach((radio) => {
+        radio.addEventListener("change", updateFeatDisplay);
+      });
+    }
+
+    render("hp");
+    render("spells");
+    renderLatestRolls();
+    clearAllButtonStates();
+    setSelectorsVisible(state.selectorsVisible);
+    setProficiencyBonusesVisible(state.proficiencyBonusesVisible);
+    setActiveColor();
+    bindFeatRadios();
+    updateFeatDisplay();
+  </script>
+</body>
+</html>
