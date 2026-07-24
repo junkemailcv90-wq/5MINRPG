@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JavaScript Character Sheet</title>
+  <title>Character Sheet</title>
   <style>
     :root {
       --bg: #ffffff;
@@ -25,18 +25,6 @@
       font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    #page-background {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      opacity: 0.2;
-      pointer-events: none;
-      filter: saturate(0.9);
-    }
-    
     .wrap {
       max-width: 980px;
       margin: 0 auto;
@@ -77,7 +65,7 @@
       color: var(--muted);
       font-size: 12px;
       margin-bottom: 5px;
-      white-space: wrap;
+      white-space: nowrap;
     }
 
     .summary-value {
@@ -90,6 +78,20 @@
 
     .summary-total .summary-value {
       font-size: 23px;
+    }
+
+    .summary-button {
+      appearance: none;
+      -webkit-appearance: none;
+      font: inherit;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+
+    .summary-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
     }
 
     .toolbar {
@@ -300,7 +302,53 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       background: #fff;
+      display: grid;
+      gap: 2px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .feat-placeholder {
+      color: var(--text);
       font-weight: 600;
+    }
+
+    .feat-content {
+      display: none;
+      gap: 2px;
+    }
+
+    .feat-name {
+      font-weight: 600;
+    }
+
+    .feat-desc {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .feat-display.feat-used .feat-name,
+    .feat-display.feat-used .feat-desc {
+      color: #8a8a8a;
+      text-decoration: line-through;
+    }
+
+    .feat-use-button {
+      min-width: 150px;
+      white-space: nowrap;
+      display: none;
+      flex: 0 0 auto;
+    }
+
+    .feat-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .feat-section {
+      display: grid;
+      gap: 10px;
     }
 
     .feat-options {
@@ -352,11 +400,19 @@
       .sheet-select {
         flex: 0 0 140px;
       }
+
+      .feat-row {
+        flex-direction: column;
+      }
+
+      .feat-use-button {
+        min-width: 0;
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="page-background" aria-hidden="true"></div>
   <div class="wrap">
     <div class="panel">
       <h1>Stats</h1>
@@ -427,10 +483,10 @@
             <div class="summary-value" id="latest-proficiency-display">—</div>
           </div>
 
-          <div class="summary-card summary-total">
+          <button class="summary-card summary-total summary-button" id="total-roll-button" type="button" onclick="rerollTotal()" disabled>
             <div class="summary-label">Total</div>
             <div class="summary-value" id="latest-total-display">—</div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -531,7 +587,16 @@
 
       <div class="panel">
         <h2>Feat</h2>
-        <div class="plain-display" id="feat-display">Select one Feat after leveling up.</div>
+        <div class="feat-row">
+          <div class="feat-display" id="feat-display">
+            <div class="feat-placeholder" id="feat-placeholder">Select one Feat after leveling up.</div>
+            <div class="feat-content" id="feat-content">
+              <div class="feat-name" id="feat-name"></div>
+              <div class="feat-desc" id="feat-desc"></div>
+            </div>
+          </div>
+          <button class="button feat-use-button" id="feat-use-button" type="button" onclick="toggleFeatUse()">Use Feat!</button>
+        </div>
       </div>
 
       <details class="level-up-sheet">
@@ -541,11 +606,10 @@
             <button class="button" type="button" id="bonus-visibility-toggle-button" onclick="toggleProficiencyBonuses()">
               Show Proficiency bonuses
             </button>
-            <div class="summary-label">Select one Proficiency to gain +2, and add wearable magic equipment bonus if applicable.</div>
           </div>
 
-          <div>
-            <summary>Feats</summary>
+          <div class="feat-section">
+            <h2>Feats</h2>
             <div class="feat-options">
               <label class="feat-option">
                 <input type="radio" name="feat" value="Certainty">
@@ -623,12 +687,6 @@
             <button class="button" type="button" onclick="setActiveColor()">Set Active Color</button>
           </div>
 
-          <div class="adjust-field">
-            <label for="background-upload">Background Image</label>
-            <input id="background-upload" type="file" accept="image/*" onchange="setBackgroundImage(event)" />
-            <button class="button" type="button" onclick="clearBackgroundImage()">Clear Background</button>
-          </div>
-
           <div class="adjust-row">
             <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
               Hide Selectors
@@ -662,6 +720,16 @@
       stealth: "Stealth"
     };
 
+    const FEAT_DETAILS = {
+      Certainty: { name: "Certainty", desc: "your next d20 roll is a 15" },
+      Luck: { name: "Luck", desc: "reroll your last roll" },
+      Reserves: { name: "Reserves", desc: "replenish half your health or half your magic" },
+      Guidance: { name: "Guidance", desc: "Chosen Ally’s next d20 roll is a 15." },
+      Blessing: { name: "Blessing", desc: "Chosen Ally rerolls their last roll" },
+      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s health or magic" },
+      Prophecy: { name: "Prophecy", desc: "DM answers one lore question." }
+    };
+
     const AFFINITY_IDS = ["toughness", "skill", "magic"];
     const PROFICIENCY_IDS = ["offense", "defense", "tactics", "charm", "intimidation", "empathy", "survival", "perception", "stealth"];
     const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS];
@@ -674,13 +742,21 @@
       selectorsVisible: true,
       proficiencyBonusesVisible: false,
       autoClearSeconds: 0,
-      selectedFeatText: null
+      selectedFeatKey: null,
+      featUsed: false,
+      lastAffinityId: null,
+      lastProficiencyId: null
     };
 
     let autoClearTimer = null;
 
     function render(id) {
       document.getElementById(id).textContent = state[id];
+    }
+
+    function updateTotalRollButton() {
+      const button = document.getElementById("total-roll-button");
+      button.disabled = !(state.lastAffinityId && state.lastProficiencyId);
     }
 
     function renderLatestRolls() {
@@ -696,6 +772,8 @@
       } else {
         totalDisplay.textContent = "—";
       }
+
+      updateTotalRollButton();
     }
 
     function setButtonLabel(id, label) {
@@ -722,8 +800,11 @@
     function clearRolls() {
       state.latestAffinityRoll = null;
       state.latestProficiencyRoll = null;
+      state.lastAffinityId = null;
+      state.lastProficiencyId = null;
       clearAllButtonStates();
       renderLatestRolls();
+      updateTotalRollButton();
       if (autoClearTimer !== null) {
         clearTimeout(autoClearTimer);
         autoClearTimer = null;
@@ -755,26 +836,6 @@
       document.documentElement.style.setProperty("--active-roll-border", color);
     }
 
-    function setBackgroundImage(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-    
-      const reader = new FileReader();
-      reader.onload = () => {
-        const background = document.getElementById("page-background");
-        background.style.backgroundImage = `url("${reader.result}")`;
-      };
-      reader.readAsDataURL(file);
-    }
-    
-    function clearBackgroundImage() {
-      const background = document.getElementById("page-background");
-      background.style.backgroundImage = "none";
-    
-      const input = document.getElementById("background-upload");
-      if (input) input.value = "";
-    }
-    
     function getMax(id) {
       if (id === "hp") {
         const affinity = document.getElementById("toughness").value;
@@ -832,6 +893,7 @@
       const sides = MAX_BY_AFFINITY[rank];
       const roll = rollDie(sides);
 
+      state.lastAffinityId = selectId;
       clearCategoryHighlights(AFFINITY_IDS);
       state.latestAffinityRoll = roll;
       setButtonLabel(selectId, `${ITEM_NAMES[selectId]}: (${roll})`);
@@ -845,6 +907,8 @@
       const bonus = getProficiencyBonus(selectId);
       let result = null;
       let rawText = "";
+
+      state.lastProficiencyId = selectId;
 
       if (rank === "Average") {
         const roll = rollDie(20);
@@ -864,6 +928,15 @@
       setButtonActive(selectId, true);
       renderLatestRolls();
       scheduleAutoClear();
+    }
+
+    function rerollTotal() {
+      if (!(state.lastAffinityId && state.lastProficiencyId)) {
+        return;
+      }
+
+      rollAffinity(ITEM_NAMES[state.lastAffinityId]);
+      rollProficiency(ITEM_NAMES[state.lastProficiencyId], state.lastProficiencyId);
     }
 
     function setSelectorsVisible(visible) {
@@ -904,17 +977,46 @@
     function updateFeatDisplay() {
       const chosen = document.querySelector('input[name="feat"]:checked');
       const display = document.getElementById("feat-display");
+      const placeholder = document.getElementById("feat-placeholder");
+      const content = document.getElementById("feat-content");
+      const button = document.getElementById("feat-use-button");
 
       if (!chosen) {
-        state.selectedFeatText = null;
-        display.textContent = "Select one Feat after leveling up.";
+        state.selectedFeatKey = null;
+        state.featUsed = false;
+        display.classList.remove("feat-used");
+        placeholder.style.display = "block";
+        content.style.display = "none";
+        button.style.display = "none";
+        button.textContent = "Use Feat!";
         return;
       }
 
-      const label = chosen.closest("label");
-      const text = label ? label.innerText.replace(/\s+/g, " ").trim() : chosen.value;
-      state.selectedFeatText = text;
-      display.textContent = text;
+      const details = FEAT_DETAILS[chosen.value];
+      state.selectedFeatKey = chosen.value;
+      state.featUsed = false;
+
+      document.getElementById("feat-name").textContent = details.name;
+      document.getElementById("feat-desc").textContent = details.desc;
+
+      display.classList.remove("feat-used");
+      placeholder.style.display = "none";
+      content.style.display = "grid";
+      button.style.display = "inline-flex";
+      button.textContent = "Use Feat!";
+    }
+
+    function toggleFeatUse() {
+      if (!state.selectedFeatKey) {
+        return;
+      }
+
+      const display = document.getElementById("feat-display");
+      const button = document.getElementById("feat-use-button");
+
+      state.featUsed = !state.featUsed;
+      display.classList.toggle("feat-used", state.featUsed);
+      button.textContent = state.featUsed ? "Feat has been used." : "Use Feat!";
     }
 
     function resetFeatSelection() {
