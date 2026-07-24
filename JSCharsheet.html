@@ -514,43 +514,43 @@
           </div>
 
           <div class="item">
-            <select class="sheet-select proficiency-select" id="tactics">
+            <select class="sheet-select proficiency-select" id="athletics">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="tactics-button" type="button" onclick="rollProficiency('Tactics', 'tactics')">Tactics</button>
-            <input class="proficiency-bonus" id="tactics-bonus" type="number" value="0" step="1" />
+            <button class="roll-btn" id="athletics-button" type="button" onclick="rollProficiency('Athletics', 'athletics')">Athletics</button>
+            <input class="proficiency-bonus" id="athletics-bonus" type="number" value="0" step="1" />
           </div>
 
           <div class="item">
-            <select class="sheet-select proficiency-select" id="charm">
+            <select class="sheet-select proficiency-select" id="persuasion">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="charm-button" type="button" onclick="rollProficiency('Charm', 'charm')">Charm</button>
-            <input class="proficiency-bonus" id="charm-bonus" type="number" value="0" step="1" />
+            <button class="roll-btn" id="persuasion-button" type="button" onclick="rollProficiency('Persuasion', 'persuasion')">Persuasion</button>
+            <input class="proficiency-bonus" id="persuasion-bonus" type="number" value="0" step="1" />
           </div>
 
           <div class="item">
-            <select class="sheet-select proficiency-select" id="intimidation">
+            <select class="sheet-select proficiency-select" id="awareness">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="intimidation-button" type="button" onclick="rollProficiency('Intimidation', 'intimidation')">Intimidation</button>
-            <input class="proficiency-bonus" id="intimidation-bonus" type="number" value="0" step="1" />
+            <button class="roll-btn" id="awareness-button" type="button" onclick="rollProficiency('Awareness', 'awareness')">Awareness</button>
+            <input class="proficiency-bonus" id="awareness-bonus" type="number" value="0" step="1" />
           </div>
 
           <div class="item">
-            <select class="sheet-select proficiency-select" id="empathy">
+            <select class="sheet-select proficiency-select" id="lore">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="empathy-button" type="button" onclick="rollProficiency('Empathy', 'empathy')">Empathy</button>
-            <input class="proficiency-bonus" id="empathy-bonus" type="number" value="0" step="1" />
+            <button class="roll-btn" id="lore-button" type="button" onclick="rollProficiency('Lore', 'lore')">Lore</button>
+            <input class="proficiency-bonus" id="lore-bonus" type="number" value="0" step="1" />
           </div>
 
           <div class="item">
@@ -564,13 +564,13 @@
           </div>
 
           <div class="item">
-            <select class="sheet-select proficiency-select" id="perception">
+            <select class="sheet-select proficiency-select" id="artifice">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="perception-button" type="button" onclick="rollProficiency('Perception', 'perception')">Perception</button>
-            <input class="proficiency-bonus" id="perception-bonus" type="number" value="0" step="1" />
+            <button class="roll-btn" id="artifice-button" type="button" onclick="rollProficiency('Artifice', 'artifice')">Artifice</button>
+            <input class="proficiency-bonus" id="artifice-bonus" type="number" value="0" step="1" />
           </div>
 
           <div class="item">
@@ -711,12 +711,12 @@
       magic: "Magic",
       offense: "Offense",
       defense: "Defense",
-      tactics: "Tactics",
-      charm: "Charm",
-      intimidation: "Intimidation",
-      empathy: "Empathy",
+      athletics: "Athletics",
+      persuasion: "Persuasion",
+      awareness: "Awareness",
+      lore: "Lore",
       survival: "Survival",
-      perception: "Perception",
+      artifice: "Artifice",
       stealth: "Stealth"
     };
 
@@ -731,7 +731,7 @@
     };
 
     const AFFINITY_IDS = ["physicality", "technique", "magic"];
-    const PROFICIENCY_IDS = ["offense", "defense", "tactics", "charm", "intimidation", "empathy", "survival", "perception", "stealth"];
+    const PROFICIENCY_IDS = ["offense", "defense", "athletics", "persuasion", "awareness", "lore", "survival", "artifice", "stealth"];
     const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS];
 
     const state = {
