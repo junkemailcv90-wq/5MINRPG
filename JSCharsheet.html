@@ -900,26 +900,15 @@
       render(id);
     }
 
-    function updateAffinity(name, value) {
-  if (name === "Physicality") {
-    const max = MAX_BY_AFFINITY[value];
-    state.hp = max;
-    render("hp");
-  }
-
-  if (name === "Magic") {
-    const max = MAX_BY_AFFINITY[value];
-    state.spells = max;
-    render("spells");
-  }
-}
-
+     function updateAffinity(name, value) {
+      if (name === "Physicality") {
+        state.hp = MAX_BY_AFFINITY[value];
+        render("hp");
+      }
+    
       if (name === "Magic") {
-        const max = MAX_BY_AFFINITY[value];
-        if (state.spells > max) {
-          state.spells = max;
-          render("spells");
-        }
+        state.spells = MAX_BY_AFFINITY[value];
+        render("spells");
       }
     }
 
