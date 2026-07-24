@@ -442,21 +442,21 @@
         <h2>Affinities</h2>
         <div class="list">
           <div class="item">
-            <select class="sheet-select affinity-select" id="toughness" onchange="updateAffinity('Toughness', this.value)">
+            <select class="sheet-select affinity-select" id="physicality" onchange="updateAffinity('Physicality', this.value)">
               <option value="Average" selected>Average</option>
               <option value="Strong">Strong</option>
               <option value="Weak">Weak</option>
             </select>
-            <button class="roll-btn" id="toughness-button" type="button" onclick="rollAffinity('Toughness')">Toughness</button>
+            <button class="roll-btn" id="physicality-button" type="button" onclick="rollAffinity('Physicality')">Physicality</button>
           </div>
 
           <div class="item">
-            <select class="sheet-select affinity-select" id="skill" onchange="updateAffinity('Skill', this.value)">
+            <select class="sheet-select affinity-select" id="technique" onchange="updateAffinity('Technique', this.value)">
               <option value="Average" selected>Average</option>
               <option value="Strong">Strong</option>
               <option value="Weak">Weak</option>
             </select>
-            <button class="roll-btn" id="skill-button" type="button" onclick="rollAffinity('Skill')">Skill</button>
+            <button class="roll-btn" id="technique-button" type="button" onclick="rollAffinity('Technique')">Technique</button>
           </div>
 
           <div class="item">
@@ -706,8 +706,8 @@
     };
 
     const ITEM_NAMES = {
-      toughness: "Toughness",
-      skill: "Skill",
+      physicality: "Physicality",
+      technique: "Technique",
       magic: "Magic",
       offense: "Offense",
       defense: "Defense",
@@ -730,7 +730,7 @@
       Prophecy: { name: "Prophecy", desc: "DM answers one lore question." }
     };
 
-    const AFFINITY_IDS = ["toughness", "skill", "magic"];
+    const AFFINITY_IDS = ["physicality", "technique", "magic"];
     const PROFICIENCY_IDS = ["offense", "defense", "tactics", "charm", "intimidation", "empathy", "survival", "perception", "stealth"];
     const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS];
 
@@ -838,7 +838,7 @@
 
     function getMax(id) {
       if (id === "hp") {
-        const affinity = document.getElementById("toughness").value;
+        const affinity = document.getElementById("physicality").value;
         return MAX_BY_AFFINITY[affinity];
       }
 
@@ -857,7 +857,7 @@
     }
 
     function updateAffinity(name, value) {
-      if (name === "Toughness") {
+      if (name === "Physicality") {
         const max = MAX_BY_AFFINITY[value];
         if (state.hp > max) {
           state.hp = max;
@@ -1033,7 +1033,7 @@
         select.value = "Average";
       }
 
-      updateAffinity("Toughness", document.getElementById("toughness").value);
+      updateAffinity("Physicality", document.getElementById("physicality").value);
       updateAffinity("Magic", document.getElementById("magic").value);
       resetFeatSelection();
     }
