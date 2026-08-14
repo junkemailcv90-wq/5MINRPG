@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jeepers</title>
+<style>
+  :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color-scheme: light dark; }
+  body { margin: 0; padding: 24px; background: Canvas; color: CanvasText; }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { margin-bottom: 4px; }
+  .subtitle { opacity: .7; margin-top: 0; }
+  .card { border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: 14px; padding: 18px; margin: 18px 0; }
+  label { display: block; margin-bottom: 6px; font-weight: 600; }
+  input { width: 100%; max-width: 220px; box-sizing: border-box; padding: 10px; border-radius: 9px; border: 1px solid color-mix(in srgb, CanvasText 30%, transparent); background: Canvas; color: CanvasText; font-size: 16px; }
+  button { border: 0; border-radius: 10px; padding: 11px 16px; font-size: 16px; cursor: pointer; margin: 6px 6px 0 0; }
+  button:disabled { opacity: .5; cursor: default; }
+  .timer { font-size: clamp(48px, 12vw, 88px); font-variant-numeric: tabular-nums; text-align: center; margin: 12px 0; }
+  .done { display: none; text-align: center; font-size: 24px; font-weight: 700; margin-top: 16px; }
+  .hint { opacity: .7; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jeepers</h1>
+  <p class="subtitle">Adventure timer</p>
+
+  <section class="card">
+    <label for="minutes">Set timer (minutes)</label>
+    <input id="minutes" type="number" min="1" max="1440" value="60" inputmode="numeric">
+    <div class="timer" id="timer" aria-live="polite">60:00</div>
+    <button id="start">Start</button>
+    <button id="stop" disabled>Stop</button>
+    <button id="reset">Reset</button>
+    <p class="hint">Changing the duration while the timer is running is disabled.</p>
+    <div class="done" id="done">You did it!</div>
+  </section>
+</main>
+<script>
+(() => {
+  const minutesInput = document.getElementById('minutes');
+  const timerEl = document.getElementById('timer');
+  const startBtn = document.getElementById('start');
+  const stopBtn = document.getElementById('stop');
+  const resetBtn = document.getElementById('reset');
+  const doneEl = document.getElementById('done');
+
+  let totalSeconds = Number(minutesInput.value) * 60;
+  let remaining = totalSeconds;
+  let endTime = null;
+  let intervalId = null;
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function render() {
+    timerEl.textContent = formatTime(remaining);
+  }
+
+  function sync() {
+    if (endTime === null) return;
+    remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    render();
+    if (remaining <= 0) finish();
+  }
+
+  function finish() {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    remaining = 0;
+    render();
+    startBtn.disabled = true;
+    stopBtn.disabled = true;
+    minutesInput.disabled = false;
+    doneEl.style.display = 'block';
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (intervalId !== null) return;
+    if (remaining <= 0) {
+      totalSeconds = Math.max(1, Number(minutesInput.value) || 1) * 60;
+      remaining = totalSeconds;
+      doneEl.style.display = 'none';
+    }
+    endTime = Date.now() + remaining * 1000;
+    intervalId = setInterval(sync, 250);
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    minutesInput.disabled = true;
+    sync();
+  });
+
+  stopBtn.addEventListener('click', () => {
+    if (intervalId === null) return;
+    sync();
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    minutesInput.disabled = false;
+  });
+
+  resetBtn.addEventListener('click', () => {
+    clearInterval(intervalId);
+    intervalId = null;
+    endTime = null;
+    totalSeconds = Math.max(1, Number(minutesInput.value) || 1) * 60;
+    remaining = totalSeconds;
+    render();
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    minutesInput.disabled = false;
+    doneEl.style.display = 'none';
+  });
+
+  minutesInput.addEventListener('change', () => {
+    if (intervalId !== null) return;
+    totalSeconds = Math.max(1, Number(minutesInput.value) || 1) * 60;
+    remaining = totalSeconds;
+    render();
+    doneEl.style.display = 'none';
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
