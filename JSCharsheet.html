@@ -193,6 +193,16 @@
       margin-top: 8px;
     }
 
+    .proficiency-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .selection-instruction {
+      color: #c00000;
+      font-size: 12px;
+      margin: -3px 0 8px;
+    }
+
     .item {
       display: flex;
       align-items: center;
@@ -201,6 +211,30 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       background: #fff;
+    }
+
+    .proficiency-item {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      align-items: stretch;
+    }
+
+    .proficiency-item .roll-btn {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .proficiency-item .sheet-select {
+      width: 100%;
+      flex: none;
+    }
+
+    .proficiency-bonus-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
     }
 
     .sheet-select {
@@ -246,7 +280,8 @@
     }
 
     details.adjust-sheet,
-    details.level-up-sheet {
+    details.level-up-sheet,
+    details.share-sheet {
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 0 12px 12px;
@@ -254,7 +289,8 @@
     }
 
     details.adjust-sheet > summary,
-    details.level-up-sheet > summary {
+    details.level-up-sheet > summary,
+    details.share-sheet > summary {
       list-style: none;
       cursor: pointer;
       padding: 12px 0;
@@ -263,7 +299,8 @@
     }
 
     details.adjust-sheet > summary::-webkit-details-marker,
-    details.level-up-sheet > summary::-webkit-details-marker {
+    details.level-up-sheet > summary::-webkit-details-marker,
+    details.share-sheet > summary::-webkit-details-marker {
       display: none;
     }
 
@@ -271,6 +308,25 @@
     .level-up-body {
       display: grid;
       gap: 11px;
+    }
+
+    .share-body {
+      display: grid;
+      gap: 12px;
+      justify-items: start;
+    }
+
+    .share-qr {
+      display: block;
+      width: min(220px, 100%);
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .share-link {
+      color: var(--text);
+      font-weight: 600;
     }
 
     .adjust-row,
@@ -284,6 +340,13 @@
     .adjust-state {
       color: var(--muted);
       font-size: 12px;
+    }
+
+    .adjust-divider {
+      width: 100%;
+      margin: 2px 0;
+      border: 0;
+      border-top: 1px solid var(--line);
     }
 
     .adjust-field {
@@ -443,7 +506,7 @@
         </div>
 
         <div class="stat">
-          <label for="spells">Spells</label>
+          <label for="spells">Spirit Points</label>
           <div class="stepper">
             <button type="button" aria-label="Decrease Spells" onclick="changeValue('spells', -1)">–</button>
             <span id="spells">8</span>
@@ -456,6 +519,7 @@
     <div class="groups">
       <div class="panel">
         <h2>Affinities</h2>
+        <div class="selection-instruction" id="affinity-instruction">Select one each Strong, Average, Weak</div>
         <div class="list">
           <div class="item">
             <select class="sheet-select affinity-select" id="physicality" onchange="updateAffinity('Physicality', this.value)">
@@ -476,12 +540,12 @@
           </div>
 
           <div class="item">
-            <select class="sheet-select affinity-select" id="magic" onchange="updateAffinity('Magic', this.value)">
+            <select class="sheet-select affinity-select" id="spirit" onchange="updateAffinity('Spirit', this.value)">
               <option value="Average" selected>Average</option>
               <option value="Strong">Strong</option>
               <option value="Weak">Weak</option>
             </select>
-            <button class="roll-btn" id="magic-button" type="button" onclick="rollAffinity('Magic')">Magic</button>
+            <button class="roll-btn" id="spirit-button" type="button" onclick="rollAffinity('Spirit')">Spirit</button>
           </div>
         </div>
       </div>
@@ -508,100 +572,111 @@
 
       <div class="panel">
         <h2>Proficiencies</h2>
-        <div class="list">
-          <div class="item">
+        <div class="selection-instruction" id="proficiency-instruction">Select any two Strong and any one Weak, all others remain Average</div>
+        <div class="list proficiency-list">
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="offense-button" type="button" onclick="rollProficiency('Offense', 'offense')">Offense</button>
             <select class="sheet-select proficiency-select" id="offense">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="offense-button" type="button" onclick="rollProficiency('Offense', 'offense')">Offense</button>
-            <input class="proficiency-bonus" id="offense-bonus" type="number" value="0" step="1" />
+            <label class="proficiency-bonus-row" for="offense-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="offense-bonus" type="number" value="0" step="1" /></label>
           </div>
 
-          <div class="item">
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="defense-button" type="button" onclick="rollProficiency('Defense', 'defense')">Defense</button>
             <select class="sheet-select proficiency-select" id="defense">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="defense-button" type="button" onclick="rollProficiency('Defense', 'defense')">Defense</button>
-            <input class="proficiency-bonus" id="defense-bonus" type="number" value="0" step="1" />
+            <label class="proficiency-bonus-row" for="defense-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="defense-bonus" type="number" value="0" step="1" /></label>
           </div>
 
-          <div class="item">
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="athletics-button" type="button" onclick="rollProficiency('Athletics', 'athletics')">Athletics</button>
             <select class="sheet-select proficiency-select" id="athletics">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="athletics-button" type="button" onclick="rollProficiency('Athletics', 'athletics')">Athletics</button>
-            <input class="proficiency-bonus" id="athletics-bonus" type="number" value="0" step="1" />
+            <label class="proficiency-bonus-row" for="athletics-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="athletics-bonus" type="number" value="0" step="1" /></label>
           </div>
 
-          <div class="item">
-            <select class="sheet-select proficiency-select" id="persuasion">
-              <option selected>Average</option>
-              <option>Strong</option>
-              <option>Weak</option>
-            </select>
-            <button class="roll-btn" id="persuasion-button" type="button" onclick="rollProficiency('Persuasion', 'persuasion')">Persuasion</button>
-            <input class="proficiency-bonus" id="persuasion-bonus" type="number" value="0" step="1" />
-          </div>
-
-          <div class="item">
-            <select class="sheet-select proficiency-select" id="awareness">
-              <option selected>Average</option>
-              <option>Strong</option>
-              <option>Weak</option>
-            </select>
-            <button class="roll-btn" id="awareness-button" type="button" onclick="rollProficiency('Awareness', 'awareness')">Awareness</button>
-            <input class="proficiency-bonus" id="awareness-bonus" type="number" value="0" step="1" />
-          </div>
-
-          <div class="item">
-            <select class="sheet-select proficiency-select" id="lore">
-              <option selected>Average</option>
-              <option>Strong</option>
-              <option>Weak</option>
-            </select>
-            <button class="roll-btn" id="lore-button" type="button" onclick="rollProficiency('Lore', 'lore')">Lore</button>
-            <input class="proficiency-bonus" id="lore-bonus" type="number" value="0" step="1" />
-          </div>
-
-          <div class="item">
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="survival-button" type="button" onclick="rollProficiency('Survival', 'survival')">Survival</button>
             <select class="sheet-select proficiency-select" id="survival">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="survival-button" type="button" onclick="rollProficiency('Survival', 'survival')">Survival</button>
-            <input class="proficiency-bonus" id="survival-bonus" type="number" value="0" step="1" />
+            <label class="proficiency-bonus-row" for="survival-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="survival-bonus" type="number" value="0" step="1" /></label>
           </div>
 
-          <div class="item">
-            <select class="sheet-select proficiency-select" id="artifice">
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="awareness-button" type="button" onclick="rollProficiency('Awareness', 'awareness')">Awareness</button>
+            <select class="sheet-select proficiency-select" id="awareness">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="artifice-button" type="button" onclick="rollProficiency('Artifice', 'artifice')">Artifice</button>
-            <input class="proficiency-bonus" id="artifice-bonus" type="number" value="0" step="1" />
+            <label class="proficiency-bonus-row" for="awareness-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="awareness-bonus" type="number" value="0" step="1" /></label>
           </div>
 
-          <div class="item">
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="lore-button" type="button" onclick="rollProficiency('Lore', 'lore')">Lore</button>
+            <select class="sheet-select proficiency-select" id="lore">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <label class="proficiency-bonus-row" for="lore-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="lore-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="stealth-button" type="button" onclick="rollProficiency('Stealth', 'stealth')">Stealth</button>
             <select class="sheet-select proficiency-select" id="stealth">
               <option selected>Average</option>
               <option>Strong</option>
               <option>Weak</option>
             </select>
-            <button class="roll-btn" id="stealth-button" type="button" onclick="rollProficiency('Stealth', 'stealth')">Stealth</button>
-            <input class="proficiency-bonus" id="stealth-bonus" type="number" value="0" step="1" />
+            <label class="proficiency-bonus-row" for="stealth-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="stealth-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="persuasion-button" type="button" onclick="rollProficiency('Persuasion', 'persuasion')">Persuasion</button>
+            <select class="sheet-select proficiency-select" id="persuasion">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <label class="proficiency-bonus-row" for="persuasion-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="persuasion-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="artifice-button" type="button" onclick="rollProficiency('Artifice', 'artifice')">Artifice</button>
+            <select class="sheet-select proficiency-select" id="artifice">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <label class="proficiency-bonus-row" for="artifice-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="artifice-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="lifecraft-button" type="button" onclick="rollProficiency('Lifecraft', 'lifecraft')">Lifecraft</button>
+            <select class="sheet-select proficiency-select" id="lifecraft">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <label class="proficiency-bonus-row" for="lifecraft-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="lifecraft-bonus" type="number" value="0" step="1" /></label>
           </div>
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="feat-panel">
         <h2>Feat</h2>
         <div class="feat-row">
           <div class="feat-display" id="feat-display">
@@ -627,87 +702,44 @@
           <div class="feat-section">
             <h2>Feats</h2>
             <div class="feat-options">
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Certainty">
-                <div class="feat-text">
-                  <div class="feat-name">Certainty</div>
-                  <div class="feat-desc">your next d20 roll is a 15</div>
-                </div>
-              </label>
-
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Luck">
-                <div class="feat-text">
-                  <div class="feat-name">Luck</div>
-                  <div class="feat-desc">reroll your last roll</div>
-                </div>
-              </label>
-
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Reserves">
-                <div class="feat-text">
-                  <div class="feat-name">Reserves</div>
-                  <div class="feat-desc">replenish half your health or half your magic</div>
-                </div>
-              </label>
-
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Guidance">
-                <div class="feat-text">
-                  <div class="feat-name">Guidance</div>
-                  <div class="feat-desc">Chosen Ally’s next d20 roll is a 15.</div>
-                </div>
-              </label>
-
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Blessing">
-                <div class="feat-text">
-                  <div class="feat-name">Blessing</div>
-                  <div class="feat-desc">Chosen Ally rerolls their last roll</div>
-                </div>
-              </label>
-
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Healing">
-                <div class="feat-text">
-                  <div class="feat-name">Healing</div>
-                  <div class="feat-desc">replenish half your Chosen Ally’s health or magic</div>
-                </div>
-              </label>
-
-              <label class="feat-option">
-                <input type="radio" name="feat" value="Prophecy">
-                <div class="feat-text">
-                  <div class="feat-name">Prophecy</div>
-                  <div class="feat-desc">DM answers one lore question.</div>
-                </div>
-              </label>
+              <select class="sheet-select" id="feat-select" onchange="updateFeatDisplay()">
+                <option value="" selected>No feat selected</option>
+                <option value="Certainty">Certainty</option>
+                <option value="Luck">Luck</option>
+                <option value="Reserves">Reserves</option>
+                <option value="Guidance">Guidance</option>
+                <option value="Blessing">Blessing</option>
+                <option value="Healing">Healing</option>
+                <option value="Prophecy">Prophecy</option>
+              </select>
             </div>
           </div>
         </div>
       </details>
 
-      <details class="adjust-sheet" id="adjust-sheet">
+      <details class="adjust-sheet" id="adjust-sheet" open>
         <summary>Adjust Sheet</summary>
         <div class="adjust-body">
-          <div class="adjust-state" id="sheet-lock-state">Selectors are visible.</div>
+          <div class="adjust-row">
+            <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
+              Hide Dropdowns
+            </button>
+            <button class="button" type="button" onclick="resetDropdowns()">Reset Dropdowns</button>
+          </div>
+
+          <div class="adjust-state" id="sheet-lock-state">Dropdowns are visible.</div>
 
           <div class="adjust-field">
             <label for="auto-clear-seconds">Automatically clear rolls after ___ seconds</label>
             <input id="auto-clear-seconds" type="number" min="0" step="1" value="0" onchange="updateAutoClearSeconds()" />
           </div>
 
+          <hr class="adjust-divider" />
+
           <div class="adjust-field">
             <label for="active-color-picker">Set Active Color</label>
             <input id="active-color-picker" type="color" value="#dff5df" />
             <button class="button" type="button" onclick="setActiveColor()">Set Active Color</button>
-          </div>
-
-          <div class="adjust-row">
-            <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
-              Hide Selectors
-            </button>
-            <button class="button" type="button" onclick="resetDropdowns()">Reset</button>
           </div>
 
           <div class="adjust-field">
@@ -716,6 +748,14 @@
             <button class="button" type="button" onclick="clearBackgroundImage()">Clear Background</button>
           </div>
           
+        </div>
+      </details>
+
+      <details class="share-sheet">
+        <summary>Share this sheet!</summary>
+        <div class="share-body">
+          <img class="share-qr" src="images/QR_Charsheet_JS.png" alt="QR code for this character sheet" />
+          <a class="share-link" href="assets/player/5MINRPG_CharacterSheet.pdf" target="_blank" rel="noopener noreferrer">PDF Character Sheet</a>
         </div>
       </details>
     </div>
@@ -731,7 +771,7 @@
     const ITEM_NAMES = {
       physicality: "Physicality",
       technique: "Technique",
-      magic: "Magic",
+      spirit: "Spirit",
       offense: "Offense",
       defense: "Defense",
       athletics: "Athletics",
@@ -740,21 +780,22 @@
       lore: "Lore",
       survival: "Survival",
       artifice: "Artifice",
-      stealth: "Stealth"
+      stealth: "Stealth",
+      lifecraft: "Lifecraft"
     };
 
     const FEAT_DETAILS = {
       Certainty: { name: "Certainty", desc: "your next d20 roll is a 15" },
       Luck: { name: "Luck", desc: "reroll your last roll" },
-      Reserves: { name: "Reserves", desc: "replenish half your health or half your magic" },
+      Reserves: { name: "Reserves", desc: "replenish half your health or half your spirit" },
       Guidance: { name: "Guidance", desc: "Chosen Ally’s next d20 roll is a 15." },
       Blessing: { name: "Blessing", desc: "Chosen Ally rerolls their last roll" },
-      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s health or magic" },
+      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s health or spirit" },
       Prophecy: { name: "Prophecy", desc: "DM answers one lore question." }
     };
 
-    const AFFINITY_IDS = ["physicality", "technique", "magic"];
-    const PROFICIENCY_IDS = ["offense", "defense", "athletics", "persuasion", "awareness", "lore", "survival", "artifice", "stealth"];
+    const AFFINITY_IDS = ["physicality", "technique", "spirit"];
+    const PROFICIENCY_IDS = ["offense", "defense", "athletics", "survival", "awareness", "lore", "stealth", "persuasion", "artifice", "lifecraft"];
     const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS];
 
     const state = {
@@ -887,7 +928,7 @@
       }
 
       if (id === "spells") {
-        const affinity = document.getElementById("magic").value;
+        const affinity = document.getElementById("spirit").value;
         return MAX_BY_AFFINITY[affinity];
       }
 
@@ -900,13 +941,30 @@
       render(id);
     }
 
+     function updateSelectionInstructions() {
+       const affinityValues = AFFINITY_IDS.map((id) => document.getElementById(id).value);
+       const affinityComplete =
+         affinityValues.filter((value) => value === "Strong").length === 1 &&
+         affinityValues.filter((value) => value === "Average").length === 1 &&
+         affinityValues.filter((value) => value === "Weak").length === 1;
+
+       const proficiencyValues = PROFICIENCY_IDS.map((id) => document.getElementById(id).value);
+       const proficiencyComplete =
+         proficiencyValues.filter((value) => value === "Strong").length === 2 &&
+         proficiencyValues.filter((value) => value === "Weak").length === 1 &&
+         proficiencyValues.filter((value) => value === "Average").length === 7;
+
+       document.getElementById("affinity-instruction").style.display = affinityComplete ? "none" : "block";
+       document.getElementById("proficiency-instruction").style.display = proficiencyComplete ? "none" : "block";
+     }
+
      function updateAffinity(name, value) {
       if (name === "Physicality") {
         state.hp = MAX_BY_AFFINITY[value];
         render("hp");
       }
     
-      if (name === "Magic") {
+      if (name === "Spirit") {
         state.spells = MAX_BY_AFFINITY[value];
         render("spells");
       }
@@ -986,10 +1044,10 @@
       }
 
       document.getElementById("visibility-toggle-button").textContent =
-        visible ? "Hide Selectors" : "Show Selectors";
+        visible ? "Hide Dropdowns" : "Show Dropdowns";
 
       document.getElementById("sheet-lock-state").textContent =
-        visible ? "Selectors are visible." : "Selectors are hidden.";
+        visible ? "Dropdowns are visible." : "Dropdowns are hidden.";
     }
 
     function toggleSelectors() {
@@ -998,7 +1056,7 @@
     }
 
     function setProficiencyBonusesVisible(visible) {
-      const inputs = document.querySelectorAll(".proficiency-bonus");
+      const inputs = document.querySelectorAll(".proficiency-bonus-row");
 
       for (const input of inputs) {
         input.style.display = visible ? "" : "none";
@@ -1014,13 +1072,16 @@
     }
 
     function updateFeatDisplay() {
-      const chosen = document.querySelector('input[name="feat"]:checked');
+      const featSelect = document.getElementById("feat-select");
+      const chosenKey = featSelect ? featSelect.value : "";
+      const panel = document.getElementById("feat-panel");
       const display = document.getElementById("feat-display");
       const placeholder = document.getElementById("feat-placeholder");
       const content = document.getElementById("feat-content");
       const button = document.getElementById("feat-use-button");
 
-      if (!chosen) {
+      if (!chosenKey) {
+        if (panel) panel.style.display = "none";
         state.selectedFeatKey = null;
         state.featUsed = false;
         display.classList.remove("feat-used");
@@ -1031,8 +1092,9 @@
         return;
       }
 
-      const details = FEAT_DETAILS[chosen.value];
-      state.selectedFeatKey = chosen.value;
+      if (panel) panel.style.display = "";
+      const details = FEAT_DETAILS[chosenKey];
+      state.selectedFeatKey = chosenKey;
       state.featUsed = false;
 
       document.getElementById("feat-name").textContent = details.name;
@@ -1059,19 +1121,17 @@
     }
 
     function resetFeatSelection() {
-      const radios = document.querySelectorAll('input[name="feat"]');
-      for (const radio of radios) {
-        radio.checked = false;
-      }
+      const select = document.getElementById("feat-select");
+      if (select) select.value = "";
       updateFeatDisplay();
     }
 
     function syncBaseResources() {
       const physicality = document.getElementById("physicality").value;
-      const magic = document.getElementById("magic").value;
+      const spirit = document.getElementById("spirit").value;
     
       state.hp = MAX_BY_AFFINITY[physicality];
-      state.spells = MAX_BY_AFFINITY[magic];
+      state.spells = MAX_BY_AFFINITY[spirit];
     
       render("hp");
       render("spells");
@@ -1084,16 +1144,20 @@
       }
 
       updateAffinity("Physicality", document.getElementById("physicality").value);
-      updateAffinity("Magic", document.getElementById("magic").value);
+      updateAffinity("Spirit", document.getElementById("spirit").value);
       syncBaseResources();
       resetFeatSelection();
     }
 
-    function bindFeatRadios() {
-      const radios = document.querySelectorAll('input[name="feat"]');
-      radios.forEach((radio) => {
-        radio.addEventListener("change", updateFeatDisplay);
+    function bindSelectionInstructions() {
+      document.querySelectorAll(".affinity-select, .proficiency-select").forEach((select) => {
+        select.addEventListener("change", updateSelectionInstructions);
       });
+      updateSelectionInstructions();
+    }
+
+    function bindFeatRadios() {
+      // Feat selection is handled by the dropdown's onchange event.
     }
 
     render("hp");
@@ -1104,6 +1168,7 @@
     setProficiencyBonusesVisible(state.proficiencyBonusesVisible);
     setActiveColor();
     bindFeatRadios();
+    bindSelectionInstructions();
     updateFeatDisplay();
   </script>
 </body>
