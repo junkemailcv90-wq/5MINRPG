@@ -57,6 +57,30 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 12px;
+      background: #fff;
+    }
+
+    .name-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+    }
+
+    .name-field {
+      width: 100%;
+      min-width: 0;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .name-separator {
+      white-space: nowrap;
+      font-size: 16px;
     }
 
     .summary {
@@ -281,7 +305,8 @@
 
     details.adjust-sheet,
     details.level-up-sheet,
-    details.share-sheet {
+    details.share-sheet,
+    details.equipment-sheet {
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 0 12px 12px;
@@ -290,7 +315,8 @@
 
     details.adjust-sheet > summary,
     details.level-up-sheet > summary,
-    details.share-sheet > summary {
+    details.share-sheet > summary,
+    details.equipment-sheet > summary {
       list-style: none;
       cursor: pointer;
       padding: 12px 0;
@@ -300,7 +326,8 @@
 
     details.adjust-sheet > summary::-webkit-details-marker,
     details.level-up-sheet > summary::-webkit-details-marker,
-    details.share-sheet > summary::-webkit-details-marker {
+    details.share-sheet > summary::-webkit-details-marker,
+    details.equipment-sheet > summary::-webkit-details-marker {
       display: none;
     }
 
@@ -308,6 +335,28 @@
     .level-up-body {
       display: grid;
       gap: 11px;
+    }
+
+    .equipment-body {
+      display: grid;
+      gap: 11px;
+    }
+
+    .equipment-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+      resize: vertical;
+    }
+
+    .equipment-field {
+      display: grid;
+      gap: 6px;
     }
 
     .share-body {
@@ -429,9 +478,33 @@
       gap: 10px;
     }
 
+    .feat-section h2 {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
     .feat-options {
       display: grid;
       gap: 8px;
+    }
+
+    .feat-selection-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .feat-selection-row .sheet-select {
+      width: 220px;
+      flex: 0 0 220px;
+    }
+
+    .feat-selection-desc {
+      color: var(--muted);
+      font-size: 12px;
+      flex: 1 1 220px;
+      min-width: 0;
     }
 
     .feat-option {
@@ -493,6 +566,15 @@
 <body>
   <div id="page-background" aria-hidden="true"></div>
   <div class="wrap">
+    <div class="panel">
+      <h1>Name</h1>
+      <div class="name-line">
+        <input class="name-field" id="character-name" type="text" placeholder="Name" aria-label="Character name" />
+        <span class="name-separator">, the</span>
+        <input class="name-field" id="character-epithet" type="text" placeholder="Epithet" aria-label="Character epithet" />
+      </div>
+    </div>
+
     <div class="panel">
       <h1>Stats</h1>
       <div class="stats">
@@ -690,10 +772,42 @@
         </div>
       </div>
 
+      <details class="equipment-sheet" open>
+        <summary>Equipment</summary>
+        <div class="equipment-body">
+          <div class="equipment-field">
+            <label for="equipment-text"></label>
+            <textarea class="equipment-textarea" id="equipment-text">Keep track of inventory here. Ask GM about starting equipment.</textarea>
+          </div>
+
+          <div class="equipment-field">
+            <label for="tools-of-trade">Tools of the Trade - having just the right tools for the job gives you a +1 to a single Proficiency of your choice.</label>
+            <select class="sheet-select" id="tools-of-trade">
+              <option value="" selected>No Proficiency selected</option>
+              <option value="Offense">Offense</option>
+              <option value="Defense">Defense</option>
+              <option value="Athletics">Athletics</option>
+              <option value="Survival">Survival</option>
+              <option value="Awareness">Awareness</option>
+              <option value="Lore">Lore</option>
+              <option value="Stealth">Stealth</option>
+              <option value="Persuasion">Persuasion</option>
+              <option value="Artifice">Artifice</option>
+              <option value="Lifecraft">Lifecraft</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
       <details class="level-up-sheet">
-        <summary>Level Up</summary>
+        <summary>Level Up (Wait for your GM to tell you!)</summary>
         <div class="level-up-body">
-          <div class="level-up-row">
+         
+         <div>
+           On Level Up, set a single Proficiency Bonus of your choice to +2. If you have a bonus from Loot, they add together.
+         </div>	
+
+         <div class="level-up-row">
             <button class="button" type="button" id="bonus-visibility-toggle-button" onclick="toggleProficiencyBonuses()">
               Show Proficiency bonuses
             </button>
@@ -702,16 +816,19 @@
           <div class="feat-section">
             <h2>Feats</h2>
             <div class="feat-options">
-              <select class="sheet-select" id="feat-select" onchange="updateFeatDisplay()">
-                <option value="" selected>No feat selected</option>
-                <option value="Certainty">Certainty</option>
-                <option value="Luck">Luck</option>
-                <option value="Reserves">Reserves</option>
-                <option value="Guidance">Guidance</option>
-                <option value="Blessing">Blessing</option>
-                <option value="Healing">Healing</option>
-                <option value="Prophecy">Prophecy</option>
-              </select>
+              <div class="feat-selection-row">
+                <select class="sheet-select" id="feat-select" onchange="updateFeatDisplay()">
+                  <option value="" selected>No feat selected</option>
+                  <option value="Certainty">Certainty</option>
+                  <option value="Luck">Luck</option>
+                  <option value="Reserves">Reserves</option>
+                  <option value="Guidance">Guidance</option>
+                  <option value="Blessing">Blessing</option>
+                  <option value="Healing">Healing</option>
+                  <option value="Prophecy">Prophecy</option>
+                </select>
+                <div id="feat-selection-desc"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -754,8 +871,8 @@
       <details class="share-sheet">
         <summary>Share this sheet!</summary>
         <div class="share-body">
-          <img class="share-qr" src="images/QR_Charsheet_JS.png" alt="QR code for this character sheet" />
-          <a class="share-link" href="assets/player/5MINRPG_CharacterSheet.pdf" target="_blank" rel="noopener noreferrer">PDF Character Sheet</a>
+          <img class="share-qr" src="QR_CODE_IMAGE_PLACEHOLDER" alt="QR code for this character sheet" />
+          <a class="share-link" href="PLACEHOLDER_URL" target="_blank" rel="noopener noreferrer">PDF Character Sheet</a>
         </div>
       </details>
     </div>
@@ -787,11 +904,11 @@
     const FEAT_DETAILS = {
       Certainty: { name: "Certainty", desc: "your next d20 roll is a 15" },
       Luck: { name: "Luck", desc: "reroll your last roll" },
-      Reserves: { name: "Reserves", desc: "replenish half your health or half your spirit" },
+      Reserves: { name: "Reserves", desc: "replenish half your max Hit Points or Spirit Points" },
       Guidance: { name: "Guidance", desc: "Chosen Ally’s next d20 roll is a 15." },
       Blessing: { name: "Blessing", desc: "Chosen Ally rerolls their last roll" },
-      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s health or spirit" },
-      Prophecy: { name: "Prophecy", desc: "DM answers one lore question." }
+      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s max Hit Points or Spirit Points" },
+      Prophecy: { name: "Prophecy", desc: "The GM answers one lore question." }
     };
 
     const AFFINITY_IDS = ["physicality", "technique", "spirit"];
@@ -979,6 +1096,11 @@
       return Number.isFinite(raw) ? raw : 0;
     }
 
+    function getToolsOfTradeBonus(selectId) {
+      const selectedProficiency = document.getElementById("tools-of-trade")?.value;
+      return selectedProficiency === ITEM_NAMES[selectId] ? 1 : 0;
+    }
+
     function formatProficiencyLabel(name, rawText, bonus) {
       return bonus !== 0 ? `${name}: ${rawText} + ${bonus}` : `${name}: ${rawText}`;
     }
@@ -1001,7 +1123,9 @@
 
     function rollProficiency(name, selectId) {
       const rank = document.getElementById(selectId).value;
-      const bonus = getProficiencyBonus(selectId);
+      const baseBonus = getProficiencyBonus(selectId);
+      const toolsBonus = getToolsOfTradeBonus(selectId);
+      const bonus = baseBonus + toolsBonus;
       let result = null;
       let rawText = "";
 
@@ -1037,7 +1161,7 @@
     }
 
     function setSelectorsVisible(visible) {
-      const selects = document.querySelectorAll(".sheet-select");
+      const selects = document.querySelectorAll(".affinity-select, .proficiency-select");
 
       for (const select of selects) {
         select.style.display = visible ? "" : "none";
@@ -1075,6 +1199,7 @@
       const featSelect = document.getElementById("feat-select");
       const chosenKey = featSelect ? featSelect.value : "";
       const panel = document.getElementById("feat-panel");
+      const selectionDesc = document.getElementById("feat-selection-desc");
       const display = document.getElementById("feat-display");
       const placeholder = document.getElementById("feat-placeholder");
       const content = document.getElementById("feat-content");
@@ -1082,6 +1207,7 @@
 
       if (!chosenKey) {
         if (panel) panel.style.display = "none";
+        if (selectionDesc) selectionDesc.textContent = "";
         state.selectedFeatKey = null;
         state.featUsed = false;
         display.classList.remove("feat-used");
@@ -1094,6 +1220,7 @@
 
       if (panel) panel.style.display = "";
       const details = FEAT_DETAILS[chosenKey];
+      if (selectionDesc) selectionDesc.textContent = details.desc;
       state.selectedFeatKey = chosenKey;
       state.featUsed = false;
 
