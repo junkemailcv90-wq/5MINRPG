@@ -588,6 +588,15 @@
         </div>
 
         <div class="stat">
+          <label for="techniquePoints">Technique Points</label>
+          <div class="stepper">
+            <button type="button" aria-label="Decrease Technique Points" onclick="changeValue('techniquePoints', -1)">–</button>
+            <span id="techniquePoints">8</span>
+            <button type="button" aria-label="Increase Technique Points" onclick="changeValue('techniquePoints', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="stat">
           <label for="spells">Spirit Points</label>
           <div class="stepper">
             <button type="button" aria-label="Decrease Spells" onclick="changeValue('spells', -1)">–</button>
@@ -918,6 +927,7 @@
     const state = {
       hp: 8,
       spells: 8,
+      techniquePoints: 8,
       latestAffinityRoll: null,
       latestProficiencyRoll: null,
       selectorsVisible: true,
@@ -1049,6 +1059,11 @@
         return MAX_BY_AFFINITY[affinity];
       }
 
+      if (id === "techniquePoints") {
+        const affinity = document.getElementById("technique").value;
+        return MAX_BY_AFFINITY[affinity];
+      }
+
       return Infinity;
     }
 
@@ -1084,6 +1099,11 @@
       if (name === "Spirit") {
         state.spells = MAX_BY_AFFINITY[value];
         render("spells");
+      }
+
+      if (name === "Technique") {
+        state.techniquePoints = MAX_BY_AFFINITY[value];
+        render("techniquePoints");
       }
     }
 
@@ -1256,12 +1276,15 @@
     function syncBaseResources() {
       const physicality = document.getElementById("physicality").value;
       const spirit = document.getElementById("spirit").value;
+      const technique = document.getElementById("technique").value;
     
       state.hp = MAX_BY_AFFINITY[physicality];
       state.spells = MAX_BY_AFFINITY[spirit];
+      state.techniquePoints = MAX_BY_AFFINITY[technique];
     
       render("hp");
       render("spells");
+      render("techniquePoints");
     }
     
     function resetDropdowns() {
@@ -1271,6 +1294,7 @@
       }
 
       updateAffinity("Physicality", document.getElementById("physicality").value);
+      updateAffinity("Technique", document.getElementById("technique").value);
       updateAffinity("Spirit", document.getElementById("spirit").value);
       syncBaseResources();
       resetFeatSelection();
@@ -1289,6 +1313,7 @@
 
     render("hp");
     render("spells");
+    render("techniquePoints");
     renderLatestRolls();
     clearAllButtonStates();
     setSelectorsVisible(state.selectorsVisible);
