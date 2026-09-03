@@ -133,6 +133,20 @@
       opacity: 0.65;
     }
 
+    .mastery-summary-button {
+      appearance: none;
+      -webkit-appearance: none;
+      font: inherit;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+
+    .mastery-summary-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
     .toolbar {
       display: flex;
       gap: 9px;
@@ -588,11 +602,11 @@
         </div>
 
         <div class="stat">
-          <label for="techniquePoints">Technique Points</label>
+          <label for="techniquePoints">Mastery Points</label>
           <div class="stepper">
-            <button type="button" aria-label="Decrease Technique Points" onclick="changeValue('techniquePoints', -1)">–</button>
+            <button type="button" aria-label="Decrease Mastery Points" onclick="changeValue('techniquePoints', -1)">–</button>
             <span id="techniquePoints">8</span>
-            <button type="button" aria-label="Increase Technique Points" onclick="changeValue('techniquePoints', 1)">+</button>
+            <button type="button" aria-label="Increase Mastery Points" onclick="changeValue('techniquePoints', 1)">+</button>
           </div>
         </div>
 
@@ -644,6 +658,11 @@
       <div class="panel">
         <h1>Roll Summary</h1>
         <div class="summary">
+          <button class="summary-card mastery-summary-button" id="mastery-roll-button" type="button" onclick="addMasteryPoint()">
+            <div class="summary-label">Mastery</div>
+            <div class="summary-value" id="mastery-roll-display">—</div>
+          </button>
+
           <div class="summary-card">
             <div class="summary-label">Affinity</div>
             <div class="summary-value" id="latest-affinity-display">—</div>
@@ -928,6 +947,7 @@
       hp: 8,
       spells: 8,
       techniquePoints: 8,
+      masteryRoll: 0,
       latestAffinityRoll: null,
       latestProficiencyRoll: null,
       selectorsVisible: true,
@@ -951,19 +971,24 @@
     }
 
     function renderLatestRolls() {
+      const masteryDisplay = document.getElementById("mastery-roll-display");
       const affinityDisplay = document.getElementById("latest-affinity-display");
       const proficiencyDisplay = document.getElementById("latest-proficiency-display");
       const totalDisplay = document.getElementById("latest-total-display");
+      const masteryButton = document.getElementById("mastery-roll-button");
 
+      masteryDisplay.textContent = state.masteryRoll > 0 ? state.masteryRoll : "—";
       affinityDisplay.textContent = state.latestAffinityRoll ?? "—";
       proficiencyDisplay.textContent = state.latestProficiencyRoll ?? "—";
 
       if (state.latestAffinityRoll !== null && state.latestProficiencyRoll !== null) {
-        totalDisplay.textContent = state.latestAffinityRoll + state.latestProficiencyRoll;
+        totalDisplay.textContent =
+          state.latestAffinityRoll + state.latestProficiencyRoll + state.masteryRoll;
       } else {
         totalDisplay.textContent = "—";
       }
 
+      masteryButton.disabled = state.techniquePoints <= 0;
       updateTotalRollButton();
     }
 
@@ -989,6 +1014,7 @@
     }
 
     function clearRolls() {
+      state.masteryRoll = 0;
       state.latestAffinityRoll = null;
       state.latestProficiencyRoll = null;
       state.lastAffinityId = null;
@@ -1125,6 +1151,17 @@
       return bonus !== 0 ? `${name}: ${rawText} + ${bonus}` : `${name}: ${rawText}`;
     }
 
+    function addMasteryPoint() {
+      if (state.techniquePoints <= 0) {
+        return;
+      }
+
+      state.masteryRoll += 1;
+      state.techniquePoints -= 1;
+      render("techniquePoints");
+      renderLatestRolls();
+    }
+
     function rollAffinity(name) {
       const selectId = name.toLowerCase();
       const rank = document.getElementById(selectId).value;
@@ -1137,7 +1174,6 @@
       setButtonLabel(selectId, `${ITEM_NAMES[selectId]}: (${roll})`);
       setButtonActive(selectId, true);
       renderLatestRolls();
-      syncBaseResources();
       scheduleAutoClear();
     }
 
@@ -1175,6 +1211,11 @@
       if (!(state.lastAffinityId && state.lastProficiencyId)) {
         return;
       }
+
+      // Rerolling clears the assigned Mastery bonus but does not refund
+      // the Mastery Points already spent to assign it.
+      state.masteryRoll = 0;
+      renderLatestRolls();
 
       rollAffinity(ITEM_NAMES[state.lastAffinityId]);
       rollProficiency(ITEM_NAMES[state.lastProficiencyId], state.lastProficiencyId);
