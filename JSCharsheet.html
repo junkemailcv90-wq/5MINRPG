@@ -1250,6 +1250,20 @@
      function updateAffinity(name, value) {
       if (name === "Physicality") {
         state.hp = MAX_BY_AFFINITY[value];
+    render("hp");
+      }
+    
+      if (name === "Spirit") {
+        state.spells = MAX_BY_AFFINITY[value];
+        render("spells");
+      }
+
+      if (name === "Technique") {
+        state.techniquePoints = MAX_BY_AFFINITY[value];
+        render("techniquePoints");
+      }
+    }
+
         const SAVE_SETTING_KEY = "5minrpg-save-setting";
     const SHEET_STATE_KEY = "5minrpg-sheet-state";
 
@@ -1400,19 +1414,6 @@
 
     const restoredSheetState = restoreSheetState();
 
-    render("hp");
-      }
-    
-      if (name === "Spirit") {
-        state.spells = MAX_BY_AFFINITY[value];
-        render("spells");
-      }
-
-      if (name === "Technique") {
-        state.techniquePoints = MAX_BY_AFFINITY[value];
-        render("techniquePoints");
-      }
-    }
 
     function rollDie(sides) {
       return Math.floor(Math.random() * sides) + 1;
