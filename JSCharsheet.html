@@ -863,7 +863,7 @@
 
           <div style="margin-left: 24px;">
             <div class="equipment-field">
-            <div><strong>Signature Item</strong>: an item unique to you that gives you +1 to a single Proficiency of your choice. <span class="sheet-hint signature-item-hint">Examples might include an <em>enchanted sword</em> that gives +1 to Offense, or a <em>family heirloom toolkit</em> that gives +1 to Artifice, or perhaps a <em>battered but reliable shield</em> that gives +1 to Defense.</span></div>
+            <div><strong>Signature Item</strong>: an item unique to you that gives you +1 to a single Proficiency of your choice. <span class="sheet-hint signature-item-hint">Examples might include an <em>enchanted sword</em> that gives +1 to Offense, or a <em>family heirloom toolkit</em> that gives +1 to Artifice, or perhaps a <em>battered but reliable shield</em> that gives +1 to Defense, but you can describe any item you like.</span></div>
             <div class="signature-item-line">
               <span>My</span>
               <input class="signature-item-description" id="signature-item-description" type="text" placeholder="signature item description" aria-label="Signature item description" />
@@ -950,6 +950,7 @@
               Hide Dropdowns
             </button>
             <button class="button" type="button" onclick="resetDropdowns()">Reset Dropdowns</button>
+            <button class="button" type="button" onclick="generateRandomCharacter()">Generate Random Character</button>
           </div>
 
           <div class="adjust-state" id="sheet-lock-state">Dropdowns are visible.</div>
@@ -1019,6 +1020,58 @@
       Prophecy: { name: "Prophecy", desc: "The GM answers one lore question." }
     };
 
+
+    const EPITHET_BY_STRONG_PROFICIENCIES = {
+      "offense|defense": { physicality: "Warrior", technique: "Duelist", spirit: "Battlemage" },
+      "offense|athletics": { physicality: "Berserker", technique: "Skirmisher", spirit: "War Dancer" },
+      "offense|stealth": { physicality: "Ambusher", technique: "Assassin", spirit: "Nightblade" },
+      "offense|awareness": { physicality: "Hunter", technique: "Marksman", spirit: "Spellhunter" },
+      "offense|persuasion": { physicality: "Warlord", technique: "Swashbuckler", spirit: "Hexer" },
+      "offense|lore": { physicality: "Monster Slayer", technique: "Strategist", spirit: "Warlock" },
+      "offense|artifice": { physicality: "Siegebreaker", technique: "Saboteur", spirit: "Battle Artificer" },
+      "offense|lifecraft": { physicality: "Ravager", technique: "Anatomist", spirit: "Bloodmage" },
+      "defense|athletics": { physicality: "Guardian", technique: "Sentinel", spirit: "Wardwalker" },
+      "defense|stealth": { physicality: "Survivor", technique: "Bodyguard", spirit: "Veilkeeper" },
+      "defense|awareness": { physicality: "Watchman", technique: "Protector", spirit: "Warder" },
+      "defense|persuasion": { physicality: "Champion", technique: "Peacekeeper", spirit: "Paladin" },
+      "defense|lore": { physicality: "Veteran", technique: "Tactician", spirit: "Abjurer" },
+      "defense|artifice": { physicality: "Fortifier", technique: "Armorer", spirit: "Runeguard" },
+      "defense|lifecraft": { physicality: "Caretaker", technique: "Physician", spirit: "Healer" },
+      "athletics|stealth": { physicality: "Prowler", technique: "Acrobat", spirit: "Shadowdancer" },
+      "athletics|awareness": { physicality: "Scout", technique: "Explorer", spirit: "Farstrider" },
+      "athletics|persuasion": { physicality: "Gladiator", technique: "Performer", spirit: "Herald" },
+      "athletics|lore": { physicality: "Delver", technique: "Archaeologist", spirit: "Planeswalker" },
+      "athletics|artifice": { physicality: "Builder", technique: "Engineer", spirit: "Shaper" },
+      "athletics|lifecraft": { physicality: "Beastmaster", technique: "Beast Rider", spirit: "Shapeshifter" },
+      "stealth|awareness": { physicality: "Stalker", technique: "Spy", spirit: "Shadowseer" },
+      "stealth|persuasion": { physicality: "Enforcer", technique: "Charlatan", spirit: "Beguiler" },
+      "stealth|lore": { physicality: "Treasure Hunter", technique: "Infiltrator", spirit: "Occultist" },
+      "stealth|artifice": { physicality: "Burglar", technique: "Thief", spirit: "Arcane Trickster" },
+      "stealth|lifecraft": { physicality: "Predator", technique: "Poisoner", spirit: "Skinchanger" },
+      "awareness|persuasion": { physicality: "Leader", technique: "Diplomat", spirit: "Oracle" },
+      "awareness|lore": { physicality: "Storykeeper", technique: "Scholar", spirit: "Diviner" },
+      "awareness|artifice": { physicality: "Prospector", technique: "Investigator", spirit: "Artificer" },
+      "awareness|lifecraft": { physicality: "Beast Whisperer", technique: "Diagnostician", spirit: "Empath" },
+      "persuasion|lore": { physicality: "Storyteller", technique: "Orator", spirit: "Prophet" },
+      "persuasion|artifice": { physicality: "Guildmaster", technique: "Merchant", spirit: "Enchanter" },
+      "persuasion|lifecraft": { physicality: "Animal Handler", technique: "Apothecary", spirit: "Witch" },
+      "lore|artifice": { physicality: "Craftmaster", technique: "Inventor", spirit: "Arcane Architect" },
+      "lore|lifecraft": { physicality: "Bonekeeper", technique: "Natural Philosopher", spirit: "Biomancer" },
+      "artifice|lifecraft": { physicality: "Fleshsmith", technique: "Chirurgeon", spirit: "Lifecrafter" }
+    };
+
+    function getRandomCharacterEpithet() {
+      const strongIds = PROFICIENCY_IDS
+        .filter((id) => document.getElementById(id)?.value === "Strong")
+        .sort();
+
+      if (strongIds.length !== 2) return "";
+
+      const key = strongIds.join("|");
+      const affinityId = AFFINITY_IDS.find((id) => document.getElementById(id)?.value === "Strong");
+      return affinityId ? EPITHET_BY_STRONG_PROFICIENCIES[key]?.[affinityId] || "" : "";
+    }
+
     const AFFINITY_IDS = ["physicality", "technique", "spirit"];
     const PROFICIENCY_IDS = ["offense", "defense", "athletics", "awareness", "persuasion", "stealth", "artifice", "lifecraft", "lore"];
     const TRUE_AFFINITY_ID = "true-affinity";
@@ -1074,7 +1127,7 @@
 
         if (state.lastProficiencyId === "lore") {
           const strongNames = PROFICIENCY_IDS
-            .filter((id) => id !== "lore" && document.getElementById(id)?.value === "Strong")
+            .filter((id) => document.getElementById(id)?.value === "Strong")
             .map((id) => ITEM_NAMES[id]);
           const strongText = strongNames.length > 0 ? strongNames.join(", ") : "None";
           const secondTotal = total + 3;
@@ -1106,6 +1159,18 @@
       document.getElementById(`${id}-button`).textContent = label;
     }
 
+    function getRankPrefix(id) {
+      const select = document.getElementById(id);
+      if (!select) return "";
+      if (select.value === "Strong") return "S - ";
+      if (select.value === "Weak") return "W - ";
+      return "";
+    }
+
+    function getRankedItemName(id) {
+      return `${getRankPrefix(id)}${ITEM_NAMES[id]}`;
+    }
+
     function setButtonActive(id, active) {
       document.getElementById(`${id}-button`).classList.toggle("active-roll", active);
     }
@@ -1118,7 +1183,7 @@
 
     function clearAllButtonStates() {
       for (const id of ALL_IDS) {
-        setButtonLabel(id, ITEM_NAMES[id]);
+        setButtonLabel(id, getRankedItemName(id));
         setButtonActive(id, false);
       }
     }
@@ -1219,31 +1284,35 @@
         return;
       }
 
-      const strongNames = PROFICIENCY_IDS
-        .filter((id) => id !== "lore" && document.getElementById(id)?.value === "Strong")
-        .map((id) => ITEM_NAMES[id]);
-
-      loreButton.textContent =
-        strongNames.length > 0
-          ? `Lore (${strongNames.join(", ")})`
-          : "Lore";
+      loreButton.textContent = getRankedItemName("lore");
     }
 
     function updateSelectionInstructions() {
        const affinityValues = AFFINITY_IDS.map((id) => document.getElementById(id).value);
        const affinityComplete =
          affinityValues.filter((value) => value === "Strong").length === 1 &&
-         affinityValues.filter((value) => value === "Average").length === 1 &&
          affinityValues.filter((value) => value === "Weak").length === 1;
 
        const proficiencyValues = PROFICIENCY_IDS.map((id) => document.getElementById(id).value);
        const proficiencyComplete =
          proficiencyValues.filter((value) => value === "Strong").length === 2 &&
-         proficiencyValues.filter((value) => value === "Weak").length === 1 &&
-         proficiencyValues.filter((value) => value === "Average").length === 7;
+         proficiencyValues.filter((value) => value === "Weak").length === 1;
 
        document.getElementById("affinity-instruction").style.display = affinityComplete ? "none" : "block";
        document.getElementById("proficiency-instruction").style.display = proficiencyComplete ? "none" : "block";
+
+       for (const id of AFFINITY_IDS) {
+         if (!(state.lastAffinityId === id && state.latestAffinityRoll !== null)) {
+           setButtonLabel(id, getRankedItemName(id));
+         }
+       }
+
+       for (const id of PROFICIENCY_IDS) {
+         if (id !== "lore" && !(state.lastProficiencyId === id && state.latestProficiencyRoll !== null)) {
+           setButtonLabel(id, getRankedItemName(id));
+         }
+       }
+
        updateLoreButtonLabel();
      }
 
@@ -1383,7 +1452,7 @@
 
       clearAllButtonStates();
       if (state.lastAffinityId && state.latestAffinityRoll !== null) {
-        setButtonLabel(state.lastAffinityId, `${ITEM_NAMES[state.lastAffinityId]}: (${state.latestAffinityRoll})`);
+        setButtonLabel(state.lastAffinityId, `${getRankedItemName(state.lastAffinityId)}: (${state.latestAffinityRoll})`);
         setButtonActive(state.lastAffinityId, true);
       }
 
@@ -1463,7 +1532,7 @@
       state.lastAffinityId = selectId;
       clearCategoryHighlights(AFFINITY_IDS);
       state.latestAffinityRoll = roll;
-      setButtonLabel(selectId, `${ITEM_NAMES[selectId]}: (${roll})`);
+      setButtonLabel(selectId, `${getRankedItemName(selectId)}: (${roll})`);
       setButtonActive(selectId, true);
       renderLatestRolls();
       scheduleAutoClear();
@@ -1495,7 +1564,7 @@
 
       clearCategoryHighlights(PROFICIENCY_IDS);
       state.latestProficiencyRoll = result;
-      setButtonLabel(selectId, formatProficiencyLabel(ITEM_NAMES[selectId], rawText, bonus));
+      setButtonLabel(selectId, formatProficiencyLabel(getRankedItemName(selectId), rawText, bonus));
       setButtonActive(selectId, true);
       renderLatestRolls();
       scheduleAutoClear();
@@ -1638,6 +1707,65 @@
       render("techniquePoints");
     }
     
+    function randomChoice(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function shuffle(items) {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+
+    function generateRandomCharacter() {
+      // Affinities: randomly assign exactly one Strong, one Average, and one Weak.
+      const randomizedAffinities = shuffle(AFFINITY_IDS);
+      const affinityRanks = ["Strong", "Average", "Weak"];
+      randomizedAffinities.forEach((id, index) => {
+        document.getElementById(id).value = affinityRanks[index];
+      });
+
+      // Apply the normal affinity-change behavior so all three resource maxima update.
+      updateAffinity("Physicality", document.getElementById("physicality").value);
+      updateAffinity("Technique", document.getElementById("technique").value);
+      updateAffinity("Spirit", document.getElementById("spirit").value);
+
+      // Ordinary Proficiencies: choose two distinct Strong, then one different Weak.
+      const shuffledProficiencies = shuffle(PROFICIENCY_IDS);
+      const strongIds = shuffledProficiencies.slice(0, 2);
+      const weakId = shuffledProficiencies[2];
+
+      PROFICIENCY_IDS.forEach((id) => {
+        const select = document.getElementById(id);
+        if (strongIds.includes(id)) {
+          select.value = "Strong";
+        } else if (id === weakId) {
+          select.value = "Weak";
+        } else {
+          select.value = "Average";
+        }
+      });
+
+      // Signature Item is selected independently from proficiency strengths/weaknesses.
+      const signatureOptions = PROFICIENCY_IDS.map((id) => ITEM_NAMES[id]);
+      document.getElementById("signature-item").value = randomChoice(signatureOptions);
+
+      // Set the epithet immediately from the Strong Affinity and the two Strong Proficiencies
+      // chosen above, without depending on a subsequent DOM event.
+      const strongAffinityId = randomizedAffinities[0];
+      const epithetKey = [...strongIds].sort().join("|");
+      const epithet = EPITHET_BY_STRONG_PROFICIENCIES[epithetKey]?.[strongAffinityId] || "";
+      document.getElementById("character-epithet").value = epithet;
+
+      updateSelectionInstructions();
+      updateLoreButtonLabel();
+      updateTotalRollButton();
+      saveSheetState();
+    }
+
     function resetDropdowns() {
       const selects = document.querySelectorAll(".sheet-select");
       for (const select of selects) {
