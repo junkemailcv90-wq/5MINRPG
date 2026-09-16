@@ -85,7 +85,7 @@
 
     .summary {
       display: flex;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       gap: 11px;
       margin-bottom: 11px;
       overflow-x: auto;
@@ -117,6 +117,18 @@
 
     .summary-total .summary-value {
       font-size: 23px;
+    }
+
+    .summary-line-break {
+      flex-basis: 100%;
+      height: 0;
+    }
+
+    .lore-total-note {
+      display: none;
+      flex-basis: 100%;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .summary-button {
@@ -241,6 +253,12 @@
       margin: -3px 0 8px;
     }
 
+    .sheet-hint {
+      color: #c00000;
+      font-size: 12px;
+      margin: -3px 0 8px;
+    }
+
     .item {
       display: flex;
       align-items: center;
@@ -358,7 +376,7 @@
 
     .equipment-textarea {
       width: 100%;
-      min-height: 180px;
+      min-height: 38px;
       padding: 8px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -371,6 +389,24 @@
     .equipment-field {
       display: grid;
       gap: 6px;
+    }
+
+    .signature-item-line {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .signature-item-description {
+      flex: 1 1 220px;
+      min-width: 160px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
     }
 
     .share-body {
@@ -582,6 +618,7 @@
   <div class="wrap">
     <div class="panel">
       <h1>Name</h1>
+      <div class="sheet-hint" id="name-hint">Get creative! Name your character anything you like!</div>
       <div class="name-line">
         <input class="name-field" id="character-name" type="text" placeholder="Name" aria-label="Character name" />
         <span class="name-separator">, the</span>
@@ -591,6 +628,7 @@
 
     <div class="panel">
       <h1>Stats</h1>
+      <div class="sheet-hint" id="stats-hint">Default (maximum) values are determined automatically based on your Affinities, but Points will go down as you play. Hit Points represent how much damage your character can take. Mastery Points represent your character's ability to supplement luck with skill for better outcomes. Spirit Points represent your character's inner strength, which can be expended to produce magical spells or other supernatural effects.</div>
       <div class="stats">
         <div class="stat">
           <label for="hp">Hit Points</label>
@@ -624,6 +662,7 @@
     <div class="groups">
       <div class="panel">
         <h2>Affinities</h2>
+        <div class="sheet-hint" id="affinity-hint">Affinities are styles or preferences for how your character approaches challenges. Physicality represents reliance on the body, often in a very simple or direct way. Technique represents reliance on practice, precision, and process. It encompasses both careful physical movements and precise, informed mental movements. Spirit represents reliance on strength of soul, willpower, even luck. It is the energy by which magical, extraordinary, or supernatural effects are brought to reality.</div>
         <div class="selection-instruction" id="affinity-instruction">Select one each Strong, Average, Weak</div>
         <div class="list">
           <div class="item">
@@ -657,13 +696,9 @@
 
       <div class="panel">
         <h1>Roll Summary</h1>
+        <div class="sheet-hint" id="roll-summary-hint">Affinity: Result of your Affinity die roll. Strength of the Affinity determines number of sides on the die (4, 8, 12). Proficiency: Result of your Proficiency die roll. Any relevant modifiers to the Proficiency die are automatically applied before being displayed here. Mastery: Tap here to spend Mastery Points to improve your Total. MP are automatically deducted when tapped in this way. Total: the sum of your Affinity + Proficiency + Mastery. Degree: represents how much of an effect your action has. Degree increases with each full increment of 5 of your Total.</div>
         <div class="summary">
-          <button class="summary-card mastery-summary-button" id="mastery-roll-button" type="button" onclick="addMasteryPoint()">
-            <div class="summary-label">Mastery</div>
-            <div class="summary-value" id="mastery-roll-display">—</div>
-          </button>
-
-          <div class="summary-card">
+<div class="summary-card">
             <div class="summary-label">Affinity</div>
             <div class="summary-value" id="latest-affinity-display">—</div>
           </div>
@@ -673,10 +708,24 @@
             <div class="summary-value" id="latest-proficiency-display">—</div>
           </div>
 
+          <button class="summary-card mastery-summary-button" id="mastery-roll-button" type="button" onclick="addMasteryPoint()">
+            <div class="summary-label">Mastery</div>
+            <div class="summary-value" id="mastery-roll-display">—</div>
+          </button>
+
+          <div class="summary-line-break" aria-hidden="true"></div>
+
           <button class="summary-card summary-total summary-button" id="total-roll-button" type="button" onclick="rerollTotal()" disabled>
             <div class="summary-label">Total</div>
             <div class="summary-value" id="latest-total-display">—</div>
           </button>
+
+          <div class="summary-card">
+            <div class="summary-label">Degree</div>
+            <div class="summary-value" id="latest-degree-display">—</div>
+          </div>
+
+          <div class="lore-total-note" id="lore-total-note"></div>
         </div>
       </div>
 
@@ -691,6 +740,7 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">any primarily offensive or destructive action.</div>
             <label class="proficiency-bonus-row" for="offense-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="offense-bonus" type="number" value="0" step="1" /></label>
           </div>
 
@@ -701,6 +751,7 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">any primarily defensive or protective action.</div>
             <label class="proficiency-bonus-row" for="defense-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="defense-bonus" type="number" value="0" step="1" /></label>
           </div>
 
@@ -711,17 +762,8 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">physical skills, stunts, or maneuvers.</div>
             <label class="proficiency-bonus-row" for="athletics-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="athletics-bonus" type="number" value="0" step="1" /></label>
-          </div>
-
-          <div class="item proficiency-item">
-            <button class="roll-btn" id="survival-button" type="button" onclick="rollProficiency('Survival', 'survival')">Survival</button>
-            <select class="sheet-select proficiency-select" id="survival">
-              <option selected>Average</option>
-              <option>Strong</option>
-              <option>Weak</option>
-            </select>
-            <label class="proficiency-bonus-row" for="survival-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="survival-bonus" type="number" value="0" step="1" /></label>
           </div>
 
           <div class="item proficiency-item">
@@ -731,27 +773,8 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">ability to notice details.</div>
             <label class="proficiency-bonus-row" for="awareness-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="awareness-bonus" type="number" value="0" step="1" /></label>
-          </div>
-
-          <div class="item proficiency-item">
-            <button class="roll-btn" id="lore-button" type="button" onclick="rollProficiency('Lore', 'lore')">Lore</button>
-            <select class="sheet-select proficiency-select" id="lore">
-              <option selected>Average</option>
-              <option>Strong</option>
-              <option>Weak</option>
-            </select>
-            <label class="proficiency-bonus-row" for="lore-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="lore-bonus" type="number" value="0" step="1" /></label>
-          </div>
-
-          <div class="item proficiency-item">
-            <button class="roll-btn" id="stealth-button" type="button" onclick="rollProficiency('Stealth', 'stealth')">Stealth</button>
-            <select class="sheet-select proficiency-select" id="stealth">
-              <option selected>Average</option>
-              <option>Strong</option>
-              <option>Weak</option>
-            </select>
-            <label class="proficiency-bonus-row" for="stealth-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="stealth-bonus" type="number" value="0" step="1" /></label>
           </div>
 
           <div class="item proficiency-item">
@@ -761,7 +784,19 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">convincing others to do what you want.</div>
             <label class="proficiency-bonus-row" for="persuasion-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="persuasion-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="stealth-button" type="button" onclick="rollProficiency('Stealth', 'stealth')">Stealth</button>
+            <select class="sheet-select proficiency-select" id="stealth">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <div class="sheet-hint proficiency-hint">skills related to moving unseen or unheard.</div>
+            <label class="proficiency-bonus-row" for="stealth-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="stealth-bonus" type="number" value="0" step="1" /></label>
           </div>
 
           <div class="item proficiency-item">
@@ -771,6 +806,7 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">actions related to the construction or manipulation of man-made objects.</div>
             <label class="proficiency-bonus-row" for="artifice-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="artifice-bonus" type="number" value="0" step="1" /></label>
           </div>
 
@@ -781,7 +817,25 @@
               <option>Strong</option>
               <option>Weak</option>
             </select>
+            <div class="sheet-hint proficiency-hint">actions related to the structure and function of living things.</div>
             <label class="proficiency-bonus-row" for="lifecraft-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="lifecraft-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="lore-button" type="button" onclick="rollProficiency('Lore', 'lore')">Lore</button>
+            <select class="sheet-select proficiency-select" id="lore">
+              <option selected>Average</option>
+              <option>Strong</option>
+              <option>Weak</option>
+            </select>
+            <div class="sheet-hint proficiency-hint">prior knowledge of facts, legends, and traditions. (You get +3 on Lore results involving the primary subject matter of your Strong Proficiencies)</div>
+            <label class="proficiency-bonus-row" for="lore-bonus"><span>Bonus:</span> <input class="proficiency-bonus" id="lore-bonus" type="number" value="0" step="1" /></label>
+          </div>
+
+          <div class="item proficiency-item">
+            <button class="roll-btn" id="true-affinity-button" type="button" onclick="rollProficiency('(True Affinity)', 'true-affinity')">(True Affinity)</button>
+
+            <div class="sheet-hint proficiency-hint">Not actually a proficiency, this allows you to make direct Affinity rolls that do not cleanly fall under any specific Proficiency (rare).</div>
           </div>
         </div>
       </div>
@@ -803,26 +857,41 @@
       <details class="equipment-sheet" open>
         <summary>Equipment</summary>
         <div class="equipment-body">
-          <div class="equipment-field">
-            <label for="equipment-text"></label>
-            <textarea class="equipment-textarea" id="equipment-text">Keep track of inventory here. Ask GM about starting equipment.</textarea>
+          <div>
+            <strong>Starting Equipment</strong> - All characters start play with a unique Signature Item, the precise nature of which is determined by the player, and a Bag of Convenience.
           </div>
 
-          <div class="equipment-field">
-            <label for="tools-of-trade">Tools of the Trade - having just the right tools for the job gives you a +1 to a single Proficiency of your choice.</label>
-            <select class="sheet-select" id="tools-of-trade">
+          <div style="margin-left: 24px;">
+            <div class="equipment-field">
+            <div><strong>Signature Item</strong>: an item unique to you that gives you +1 to a single Proficiency of your choice. <span class="sheet-hint signature-item-hint">Examples might include an <em>enchanted sword</em> that gives +1 to Offense, or a <em>family heirloom toolkit</em> that gives +1 to Artifice, or perhaps a <em>battered but reliable shield</em> that gives +1 to Defense.</span></div>
+            <div class="signature-item-line">
+              <span>My</span>
+              <input class="signature-item-description" id="signature-item-description" type="text" placeholder="signature item description" aria-label="Signature item description" />
+              <span>gives me a +1 on</span>
+            <select class="sheet-select" id="signature-item">
               <option value="" selected>No Proficiency selected</option>
               <option value="Offense">Offense</option>
               <option value="Defense">Defense</option>
               <option value="Athletics">Athletics</option>
-              <option value="Survival">Survival</option>
               <option value="Awareness">Awareness</option>
-              <option value="Lore">Lore</option>
-              <option value="Stealth">Stealth</option>
               <option value="Persuasion">Persuasion</option>
+              <option value="Stealth">Stealth</option>
               <option value="Artifice">Artifice</option>
               <option value="Lifecraft">Lifecraft</option>
+              <option value="Lore">Lore</option>
             </select>
+            </div>
+          </div>
+          </div>
+
+          <div style="margin-left: 24px;">
+            <strong>Bag of Convenience:</strong> A small sack that magically produces utterly ordinary, non-electronic items that could be purchased at a real-life dollar store for not more than five real-life dollars. Items produced by the Bag last for about 10 minutes or until they break or another item is produced. Items produced by the Bag seem to respond negatively to excessive ambition and may spontaneously vanish if too much is demanded of them.
+          </div>
+
+          <div class="equipment-field">
+            <label for="equipment-text"></label>
+            <div><strong>Collected Loot</strong> -</div>
+            <textarea class="equipment-textarea" id="equipment-text" rows="1">If you collect any new items on your adventure, record them here.</textarea>
           </div>
         </div>
       </details>
@@ -865,7 +934,18 @@
       <details class="adjust-sheet" id="adjust-sheet" open>
         <summary>Adjust Sheet</summary>
         <div class="adjust-body">
+          <div class="adjust-field">
+            <label for="save-setting"><strong>Save Setting:</strong></label>
+            <select class="sheet-select" id="save-setting" onchange="updateSaveSetting()">
+              <option value="preserve">Preserve current state</option>
+              <option value="reset" selected>Reset All on Page refresh</option>
+            </select>
+          </div>
+
           <div class="adjust-row">
+            <button class="button" type="button" id="hint-visibility-toggle-button" onclick="toggleHints()">
+              Hide Hints
+            </button>
             <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
               Hide Dropdowns
             </button>
@@ -923,10 +1003,10 @@
       persuasion: "Persuasion",
       awareness: "Awareness",
       lore: "Lore",
-      survival: "Survival",
       artifice: "Artifice",
       stealth: "Stealth",
-      lifecraft: "Lifecraft"
+      lifecraft: "Lifecraft",
+      "true-affinity": "(True Affinity)"
     };
 
     const FEAT_DETAILS = {
@@ -940,8 +1020,9 @@
     };
 
     const AFFINITY_IDS = ["physicality", "technique", "spirit"];
-    const PROFICIENCY_IDS = ["offense", "defense", "athletics", "survival", "awareness", "lore", "stealth", "persuasion", "artifice", "lifecraft"];
-    const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS];
+    const PROFICIENCY_IDS = ["offense", "defense", "athletics", "awareness", "persuasion", "stealth", "artifice", "lifecraft", "lore"];
+    const TRUE_AFFINITY_ID = "true-affinity";
+    const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS, TRUE_AFFINITY_ID];
 
     const state = {
       hp: 8,
@@ -951,6 +1032,7 @@
       latestAffinityRoll: null,
       latestProficiencyRoll: null,
       selectorsVisible: true,
+      hintsVisible: true,
       proficiencyBonusesVisible: false,
       autoClearSeconds: 0,
       selectedFeatKey: null,
@@ -975,20 +1057,48 @@
       const affinityDisplay = document.getElementById("latest-affinity-display");
       const proficiencyDisplay = document.getElementById("latest-proficiency-display");
       const totalDisplay = document.getElementById("latest-total-display");
+      const degreeDisplay = document.getElementById("latest-degree-display");
       const masteryButton = document.getElementById("mastery-roll-button");
+      const loreNote = document.getElementById("lore-total-note");
 
       masteryDisplay.textContent = state.masteryRoll > 0 ? state.masteryRoll : "—";
       affinityDisplay.textContent = state.latestAffinityRoll ?? "—";
       proficiencyDisplay.textContent = state.latestProficiencyRoll ?? "—";
 
       if (state.latestAffinityRoll !== null && state.latestProficiencyRoll !== null) {
-        totalDisplay.textContent =
-          state.latestAffinityRoll + state.latestProficiencyRoll + state.masteryRoll;
+        const total = state.latestAffinityRoll + state.latestProficiencyRoll + state.masteryRoll;
+        const degree = Math.floor(total / 5);
+
+        totalDisplay.textContent = total;
+        degreeDisplay.textContent = degree;
+
+        if (state.lastProficiencyId === "lore") {
+          const strongNames = PROFICIENCY_IDS
+            .filter((id) => id !== "lore" && document.getElementById(id)?.value === "Strong")
+            .map((id) => ITEM_NAMES[id]);
+          const strongText = strongNames.length > 0 ? strongNames.join(", ") : "None";
+          const secondTotal = total + 3;
+          const secondDegree = Math.floor(secondTotal / 5);
+
+          totalDisplay.textContent = `${total} (${secondTotal})*`;
+          degreeDisplay.textContent = `${degree} (${secondDegree})*`;
+          loreNote.textContent = `*Value if Lore roll pertains to Strong Proficiency subject matter: (${strongText})`;
+          loreNote.style.display = "block";
+        } else {
+          loreNote.textContent = "";
+          loreNote.style.display = "none";
+        }
       } else {
         totalDisplay.textContent = "—";
+        degreeDisplay.textContent = "—";
+        loreNote.textContent = "";
+        loreNote.style.display = "none";
       }
 
-      masteryButton.disabled = state.techniquePoints <= 0;
+      masteryButton.disabled =
+        state.techniquePoints <= 0 ||
+        state.latestAffinityRoll === null ||
+        state.latestProficiencyRoll === null;
       updateTotalRollButton();
     }
 
@@ -1020,6 +1130,7 @@
       state.lastAffinityId = null;
       state.lastProficiencyId = null;
       clearAllButtonStates();
+      updateLoreButtonLabel();
       renderLatestRolls();
       updateTotalRollButton();
       if (autoClearTimer !== null) {
@@ -1099,7 +1210,26 @@
       render(id);
     }
 
-     function updateSelectionInstructions() {
+     function updateLoreButtonLabel() {
+      const loreButton = document.getElementById("lore-button");
+      if (!loreButton) return;
+
+      // Do not overwrite Lore's displayed roll result while Lore is active.
+      if (state.lastProficiencyId === "lore" && state.latestProficiencyRoll !== null) {
+        return;
+      }
+
+      const strongNames = PROFICIENCY_IDS
+        .filter((id) => id !== "lore" && document.getElementById(id)?.value === "Strong")
+        .map((id) => ITEM_NAMES[id]);
+
+      loreButton.textContent =
+        strongNames.length > 0
+          ? `Lore (${strongNames.join(", ")})`
+          : "Lore";
+    }
+
+    function updateSelectionInstructions() {
        const affinityValues = AFFINITY_IDS.map((id) => document.getElementById(id).value);
        const affinityComplete =
          affinityValues.filter((value) => value === "Strong").length === 1 &&
@@ -1114,12 +1244,163 @@
 
        document.getElementById("affinity-instruction").style.display = affinityComplete ? "none" : "block";
        document.getElementById("proficiency-instruction").style.display = proficiencyComplete ? "none" : "block";
+       updateLoreButtonLabel();
      }
 
      function updateAffinity(name, value) {
       if (name === "Physicality") {
         state.hp = MAX_BY_AFFINITY[value];
-        render("hp");
+        const SAVE_SETTING_KEY = "5minrpg-save-setting";
+    const SHEET_STATE_KEY = "5minrpg-sheet-state";
+
+    function getSaveSetting() {
+      return localStorage.getItem(SAVE_SETTING_KEY) || "reset";
+    }
+
+    function updateSaveSetting() {
+      const setting = document.getElementById("save-setting").value;
+      localStorage.setItem(SAVE_SETTING_KEY, setting);
+
+      if (setting === "preserve") {
+        saveSheetState();
+      } else {
+        localStorage.removeItem(SHEET_STATE_KEY);
+      }
+    }
+
+    function saveSheetState() {
+      if (getSaveSetting() !== "preserve") return;
+
+      const values = {};
+      document.querySelectorAll("input, select, textarea").forEach((element) => {
+        if (!element.id || element.id === "background-upload" || element.id === "save-setting") return;
+        if (element.type === "file") return;
+        values[element.id] = element.type === "checkbox" || element.type === "radio"
+          ? element.checked
+          : element.value;
+      });
+
+      const openDetails = {};
+      document.querySelectorAll("details[id], details.adjust-sheet, details.level-up-sheet, details.equipment-sheet, details.share-sheet")
+        .forEach((details, index) => {
+          const key = details.id || details.className || `details-${index}`;
+          openDetails[key] = details.open;
+        });
+
+      const background = document.getElementById("page-background");
+      const snapshot = {
+        state: { ...state },
+        values,
+        openDetails,
+        activeColor: document.getElementById("active-color-picker")?.value || "#dff5df",
+        backgroundImage: background?.style.backgroundImage || "none"
+      };
+
+      localStorage.setItem(SHEET_STATE_KEY, JSON.stringify(snapshot));
+    }
+
+    function restoreSheetState() {
+      const saveSetting = getSaveSetting();
+      const saveSettingSelect = document.getElementById("save-setting");
+      if (saveSettingSelect) saveSettingSelect.value = saveSetting;
+
+      if (saveSetting !== "preserve") {
+        localStorage.removeItem(SHEET_STATE_KEY);
+        return false;
+      }
+
+      const raw = localStorage.getItem(SHEET_STATE_KEY);
+      if (!raw) return false;
+
+      try {
+        const snapshot = JSON.parse(raw);
+
+        if (snapshot.state) {
+          Object.assign(state, snapshot.state);
+        }
+
+        if (snapshot.values) {
+          Object.entries(snapshot.values).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (!element) return;
+            if (element.type === "checkbox" || element.type === "radio") {
+              element.checked = Boolean(value);
+            } else {
+              element.value = value;
+            }
+          });
+        }
+
+        if (snapshot.activeColor) {
+          const picker = document.getElementById("active-color-picker");
+          if (picker) picker.value = snapshot.activeColor;
+          document.documentElement.style.setProperty("--active-roll-color", snapshot.activeColor);
+          document.documentElement.style.setProperty("--active-roll-border", snapshot.activeColor);
+        }
+
+        if (snapshot.backgroundImage) {
+          const background = document.getElementById("page-background");
+          if (background) background.style.backgroundImage = snapshot.backgroundImage;
+        }
+
+        if (snapshot.openDetails) {
+          document.querySelectorAll("details[id], details.adjust-sheet, details.level-up-sheet, details.equipment-sheet, details.share-sheet")
+            .forEach((details, index) => {
+              const key = details.id || details.className || `details-${index}`;
+              if (Object.prototype.hasOwnProperty.call(snapshot.openDetails, key)) {
+                details.open = Boolean(snapshot.openDetails[key]);
+              }
+            });
+        }
+
+        return true;
+      } catch (error) {
+        console.warn("Could not restore saved character sheet state.", error);
+        localStorage.removeItem(SHEET_STATE_KEY);
+        return false;
+      }
+    }
+
+    function renderRestoredState() {
+      render("hp");
+      render("spells");
+      render("techniquePoints");
+      renderLatestRolls();
+
+      clearAllButtonStates();
+      if (state.lastAffinityId && state.latestAffinityRoll !== null) {
+        setButtonLabel(state.lastAffinityId, `${ITEM_NAMES[state.lastAffinityId]}: (${state.latestAffinityRoll})`);
+        setButtonActive(state.lastAffinityId, true);
+      }
+
+      setSelectorsVisible(state.selectorsVisible);
+      setHintsVisible(state.hintsVisible);
+      setProficiencyBonusesVisible(state.proficiencyBonusesVisible);
+      updateSelectionInstructions();
+      updateFeatDisplay();
+    }
+
+    document.addEventListener("input", (event) => {
+      if (event.target?.id !== "save-setting") saveSheetState();
+    });
+
+    document.addEventListener("change", (event) => {
+      if (event.target?.id !== "save-setting") {
+        setTimeout(saveSheetState, 0);
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target?.id !== "save-setting") {
+        setTimeout(saveSheetState, 0);
+      }
+    });
+
+    window.addEventListener("beforeunload", saveSheetState);
+
+    const restoredSheetState = restoreSheetState();
+
+    render("hp");
       }
     
       if (name === "Spirit") {
@@ -1138,12 +1419,21 @@
     }
 
     function getProficiencyBonus(selectId) {
-      const raw = Number(document.getElementById(`${selectId}-bonus`).value);
+      if (selectId === TRUE_AFFINITY_ID) {
+        return 0;
+      }
+
+      const input = document.getElementById(`${selectId}-bonus`);
+      if (!input) {
+        return 0;
+      }
+
+      const raw = Number(input.value);
       return Number.isFinite(raw) ? raw : 0;
     }
 
-    function getToolsOfTradeBonus(selectId) {
-      const selectedProficiency = document.getElementById("tools-of-trade")?.value;
+    function getSignatureItemBonus(selectId) {
+      const selectedProficiency = document.getElementById("signature-item")?.value;
       return selectedProficiency === ITEM_NAMES[selectId] ? 1 : 0;
     }
 
@@ -1168,6 +1458,7 @@
       const sides = MAX_BY_AFFINITY[rank];
       const roll = rollDie(sides);
 
+      state.masteryRoll = 0;
       state.lastAffinityId = selectId;
       clearCategoryHighlights(AFFINITY_IDS);
       state.latestAffinityRoll = roll;
@@ -1178,10 +1469,12 @@
     }
 
     function rollProficiency(name, selectId) {
-      const rank = document.getElementById(selectId).value;
+      const isTrueAffinity = selectId === TRUE_AFFINITY_ID;
+      const rank = isTrueAffinity ? "Average" : document.getElementById(selectId).value;
       const baseBonus = getProficiencyBonus(selectId);
-      const toolsBonus = getToolsOfTradeBonus(selectId);
-      const bonus = baseBonus + toolsBonus;
+      const signatureItemBonus = isTrueAffinity ? 0 : getSignatureItemBonus(selectId);
+      const bonus = baseBonus + signatureItemBonus;
+      state.masteryRoll = 0;
       let result = null;
       let rawText = "";
 
@@ -1219,6 +1512,22 @@
 
       rollAffinity(ITEM_NAMES[state.lastAffinityId]);
       rollProficiency(ITEM_NAMES[state.lastProficiencyId], state.lastProficiencyId);
+    }
+
+    function setHintsVisible(visible) {
+      const hints = document.querySelectorAll(".sheet-hint");
+
+      for (const hint of hints) {
+        hint.style.display = visible ? "" : "none";
+      }
+
+      document.getElementById("hint-visibility-toggle-button").textContent =
+        visible ? "Hide Hints" : "Show Hints";
+    }
+
+    function toggleHints() {
+      state.hintsVisible = !state.hintsVisible;
+      setHintsVisible(state.hintsVisible);
     }
 
     function setSelectorsVisible(visible) {
@@ -1357,12 +1666,17 @@
     render("techniquePoints");
     renderLatestRolls();
     clearAllButtonStates();
+    setHintsVisible(state.hintsVisible);
     setSelectorsVisible(state.selectorsVisible);
     setProficiencyBonusesVisible(state.proficiencyBonusesVisible);
     setActiveColor();
     bindFeatRadios();
     bindSelectionInstructions();
     updateFeatDisplay();
+
+    if (restoredSheetState) {
+      renderRestoredState();
+    }
   </script>
 </body>
 </html>
