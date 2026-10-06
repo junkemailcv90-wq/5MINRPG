@@ -145,7 +145,7 @@
       opacity: 0.65;
     }
 
-    .mastery-summary-button {
+    .edge-summary-button {
       appearance: none;
       -webkit-appearance: none;
       font: inherit;
@@ -154,7 +154,7 @@
       text-align: left;
     }
 
-    .mastery-summary-button:disabled {
+    .edge-summary-button:disabled {
       cursor: not-allowed;
       opacity: 0.65;
     }
@@ -585,6 +585,47 @@
       font-size: 12px;
     }
 
+
+    .affinity-surge-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    .affinity-surge-dialog {
+      width: min(360px, 100%);
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .affinity-surge-dialog h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .affinity-surge-actions {
+      display: grid;
+      gap: 9px;
+    }
+
+    .affinity-surge-actions .button {
+      width: 100%;
+      text-align: center;
+    }
+
+    #affinity-surge-button {
+      font-weight: 700;
+    }
+
     .plain-display {
       padding: 9px;
       border: 1px solid var(--line);
@@ -628,32 +669,32 @@
 
     <div class="panel">
       <h1>Stats</h1>
-      <div class="sheet-hint" id="stats-hint">Default (maximum) values are determined automatically based on your Affinities, but Points will go down as you play. Hit Points represent how much damage your character can take. Mastery Points represent your character's ability to supplement luck with skill for better outcomes. Spirit Points represent your character's inner strength, which can be expended to produce magical spells or other supernatural effects.</div>
+      <div class="sheet-hint" id="stats-hint">Default (maximum) values are determined automatically based on your Affinities, but Points will go down as you play. Health represent how much damage your character can take. Edge represents your character's ability to supplement luck with skill for better outcomes. Surge represents your character's inner strength, which can be expended to produce magical spells or other supernatural effects.</div>
       <div class="stats">
         <div class="stat">
-          <label for="hp">Hit Points</label>
+          <label for="health">Health</label>
           <div class="stepper">
-            <button type="button" aria-label="Decrease Hit Points" onclick="changeValue('hp', -1)">–</button>
-            <span id="hp">8</span>
-            <button type="button" aria-label="Increase Hit Points" onclick="changeValue('hp', 1)">+</button>
+            <button type="button" aria-label="Decrease Health" onclick="changeValue('health', -1)">–</button>
+            <span id="health">8</span>
+            <button type="button" aria-label="Increase Health" onclick="changeValue('health', 1)">+</button>
           </div>
         </div>
 
         <div class="stat">
-          <label for="techniquePoints">Mastery Points</label>
+          <label for="edgePoints">Edge</label>
           <div class="stepper">
-            <button type="button" aria-label="Decrease Mastery Points" onclick="changeValue('techniquePoints', -1)">–</button>
-            <span id="techniquePoints">8</span>
-            <button type="button" aria-label="Increase Mastery Points" onclick="changeValue('techniquePoints', 1)">+</button>
+            <button type="button" aria-label="Decrease Edge" onclick="changeValue('edgePoints', -1)">–</button>
+            <span id="edgePoints">8</span>
+            <button type="button" aria-label="Increase Edge" onclick="changeValue('edgePoints', 1)">+</button>
           </div>
         </div>
 
         <div class="stat">
-          <label for="spells">Spirit Points</label>
+          <label for="surge">Surge</label>
           <div class="stepper">
-            <button type="button" aria-label="Decrease Spells" onclick="changeValue('spells', -1)">–</button>
-            <span id="spells">8</span>
-            <button type="button" aria-label="Increase Spells" onclick="changeValue('spells', 1)">+</button>
+            <button type="button" aria-label="Decrease Surge" onclick="changeValue('surge', -1)">–</button>
+            <span id="surge">8</span>
+            <button type="button" aria-label="Increase Surge" onclick="changeValue('surge', 1)">+</button>
           </div>
         </div>
       </div>
@@ -662,7 +703,7 @@
     <div class="groups">
       <div class="panel">
         <h2>Affinities</h2>
-        <div class="sheet-hint" id="affinity-hint">Affinities are styles or preferences for how your character approaches challenges. Physicality represents reliance on the body, often in a very simple or direct way. Technique represents reliance on practice, precision, and process. It encompasses both careful physical movements and precise, informed mental movements. Spirit represents reliance on strength of soul, willpower, even luck. It is the energy by which magical, extraordinary, or supernatural effects are brought to reality.</div>
+        <div class="sheet-hint" id="affinity-hint">Affinities are styles or preferences for how your character approaches challenges. Physicality represents reliance on the body, often in a very simple or direct way. Technique represents reliance on practice, precision, and process. It encompasses both careful physical movements and precise, informed mental movements. Spirit represents reliance on strength of soul, willpower, even luck. It is the energy used to SURGE beyond normal limits, allowing the possibility of spectacular effects.<br>Hold Affinity to Surge.</div>
         <div class="selection-instruction" id="affinity-instruction">Select one each Strong, Average, Weak</div>
         <div class="list">
           <div class="item">
@@ -696,7 +737,7 @@
 
       <div class="panel">
         <h1>Roll Summary</h1>
-        <div class="sheet-hint" id="roll-summary-hint">Affinity: Result of your Affinity die roll. Strength of the Affinity determines number of sides on the die (4, 8, 12). Proficiency: Result of your Proficiency die roll. Any relevant modifiers to the Proficiency die are automatically applied before being displayed here. Mastery: Tap here to spend Mastery Points to improve your Total. MP are automatically deducted when tapped in this way. Total: the sum of your Affinity + Proficiency + Mastery. Degree: represents how much of an effect your action has. Degree increases with each full increment of 5 of your Total.</div>
+        <div class="sheet-hint" id="roll-summary-hint">Affinity: Result of your Affinity die roll. Strength of the Affinity determines number of sides on the die (4, 8, 12). Proficiency: Result of your Proficiency die roll. Any relevant modifiers to the Proficiency die are automatically applied before being displayed here. Edge: Tap here to spend Edge to improve your Total. Edge is automatically deducted when tapped in this way. Total: the sum of your Affinity + Proficiency + Edge. Degree: represents how much of an effect your action has. Degree increases with each full increment of 5 of your Total.</div>
         <div class="summary">
 <div class="summary-card">
             <div class="summary-label">Affinity</div>
@@ -708,9 +749,9 @@
             <div class="summary-value" id="latest-proficiency-display">—</div>
           </div>
 
-          <button class="summary-card mastery-summary-button" id="mastery-roll-button" type="button" onclick="addMasteryPoint()">
-            <div class="summary-label">Mastery</div>
-            <div class="summary-value" id="mastery-roll-display">—</div>
+          <button class="summary-card edge-summary-button" id="edge-roll-button" type="button" onclick="addEdge()">
+            <div class="summary-label">Edge</div>
+            <div class="summary-value" id="edge-roll-display">—</div>
           </button>
 
           <div class="summary-line-break" aria-hidden="true"></div>
@@ -987,6 +1028,17 @@
     </div>
   </div>
 
+
+  <div class="affinity-surge-overlay" id="affinity-surge-overlay" role="presentation">
+    <div class="affinity-surge-dialog" role="dialog" aria-modal="true" aria-labelledby="affinity-surge-title">
+      <h2 id="affinity-surge-title">Affinity</h2>
+      <div class="affinity-surge-actions">
+        <button class="button" type="button" id="affinity-standard-roll-button">Standard Roll</button>
+        <button class="button" type="button" id="affinity-surge-button">Surge!</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const MAX_BY_AFFINITY = {
       Weak: 4,
@@ -1013,10 +1065,10 @@
     const FEAT_DETAILS = {
       Certainty: { name: "Certainty", desc: "your next d20 roll is a 15" },
       Luck: { name: "Luck", desc: "reroll your last roll" },
-      Reserves: { name: "Reserves", desc: "replenish half your max Hit Points or Spirit Points" },
+      Reserves: { name: "Reserves", desc: "replenish half your max Health or Surge" },
       Guidance: { name: "Guidance", desc: "Chosen Ally’s next d20 roll is a 15." },
       Blessing: { name: "Blessing", desc: "Chosen Ally rerolls their last roll" },
-      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s max Hit Points or Spirit Points" },
+      Healing: { name: "Healing", desc: "replenish half your Chosen Ally’s max Health or Surge" },
       Prophecy: { name: "Prophecy", desc: "The GM answers one lore question." }
     };
 
@@ -1078,10 +1130,10 @@
     const ALL_IDS = [...AFFINITY_IDS, ...PROFICIENCY_IDS, TRUE_AFFINITY_ID];
 
     const state = {
-      hp: 8,
-      spells: 8,
-      techniquePoints: 8,
-      masteryRoll: 0,
+      health: 8,
+      surge: 8,
+      edgePoints: 8,
+      edgeRoll: 0,
       latestAffinityRoll: null,
       latestProficiencyRoll: null,
       selectorsVisible: true,
@@ -1095,6 +1147,13 @@
     };
 
     let autoClearTimer = null;
+    let affinityHoldTimer = null;
+    let affinityHoldButton = null;
+    let suppressNextAffinityClick = false;
+    let affinityHoldTriggered = false;
+    let affinityHoldStartX = 0;
+    let affinityHoldStartY = 0;
+    let selectedAffinityForPopup = null;
 
     function render(id) {
       document.getElementById(id).textContent = state[id];
@@ -1106,20 +1165,20 @@
     }
 
     function renderLatestRolls() {
-      const masteryDisplay = document.getElementById("mastery-roll-display");
+      const edgeDisplay = document.getElementById("edge-roll-display");
       const affinityDisplay = document.getElementById("latest-affinity-display");
       const proficiencyDisplay = document.getElementById("latest-proficiency-display");
       const totalDisplay = document.getElementById("latest-total-display");
       const degreeDisplay = document.getElementById("latest-degree-display");
-      const masteryButton = document.getElementById("mastery-roll-button");
+      const edgeButton = document.getElementById("edge-roll-button");
       const loreNote = document.getElementById("lore-total-note");
 
-      masteryDisplay.textContent = state.masteryRoll > 0 ? state.masteryRoll : "—";
+      edgeDisplay.textContent = state.edgeRoll > 0 ? state.edgeRoll : "—";
       affinityDisplay.textContent = state.latestAffinityRoll ?? "—";
       proficiencyDisplay.textContent = state.latestProficiencyRoll ?? "—";
 
       if (state.latestAffinityRoll !== null && state.latestProficiencyRoll !== null) {
-        const total = state.latestAffinityRoll + state.latestProficiencyRoll + state.masteryRoll;
+        const total = state.latestAffinityRoll + state.latestProficiencyRoll + state.edgeRoll;
         const degree = Math.floor(total / 5);
 
         totalDisplay.textContent = total;
@@ -1148,8 +1207,8 @@
         loreNote.style.display = "none";
       }
 
-      masteryButton.disabled =
-        state.techniquePoints <= 0 ||
+      edgeButton.disabled =
+        state.edgePoints <= 0 ||
         state.latestAffinityRoll === null ||
         state.latestProficiencyRoll === null;
       updateTotalRollButton();
@@ -1189,7 +1248,7 @@
     }
 
     function clearRolls() {
-      state.masteryRoll = 0;
+      state.edgeRoll = 0;
       state.latestAffinityRoll = null;
       state.latestProficiencyRoll = null;
       state.lastAffinityId = null;
@@ -1251,17 +1310,17 @@
     
 
     function getMax(id) {
-      if (id === "hp") {
+      if (id === "health") {
         const affinity = document.getElementById("physicality").value;
         return MAX_BY_AFFINITY[affinity];
       }
 
-      if (id === "spells") {
+      if (id === "surge") {
         const affinity = document.getElementById("spirit").value;
         return MAX_BY_AFFINITY[affinity];
       }
 
-      if (id === "techniquePoints") {
+      if (id === "edgePoints") {
         const affinity = document.getElementById("technique").value;
         return MAX_BY_AFFINITY[affinity];
       }
@@ -1318,18 +1377,18 @@
 
      function updateAffinity(name, value) {
       if (name === "Physicality") {
-        state.hp = MAX_BY_AFFINITY[value];
-    render("hp");
+        state.health = MAX_BY_AFFINITY[value];
+    render("health");
       }
     
       if (name === "Spirit") {
-        state.spells = MAX_BY_AFFINITY[value];
-        render("spells");
+        state.surge = MAX_BY_AFFINITY[value];
+        render("surge");
       }
 
       if (name === "Technique") {
-        state.techniquePoints = MAX_BY_AFFINITY[value];
-        render("techniquePoints");
+        state.edgePoints = MAX_BY_AFFINITY[value];
+        render("edgePoints");
       }
     }
 
@@ -1445,9 +1504,9 @@
     }
 
     function renderRestoredState() {
-      render("hp");
-      render("spells");
-      render("techniquePoints");
+      render("health");
+      render("surge");
+      render("edgePoints");
       renderLatestRolls();
 
       clearAllButtonStates();
@@ -1511,28 +1570,29 @@
       return bonus !== 0 ? `${name}: ${rawText} + ${bonus}` : `${name}: ${rawText}`;
     }
 
-    function addMasteryPoint() {
-      if (state.techniquePoints <= 0) {
+    function addEdge() {
+      if (state.edgePoints <= 0) {
         return;
       }
 
-      state.masteryRoll += 1;
-      state.techniquePoints -= 1;
-      render("techniquePoints");
+      state.edgeRoll += 1;
+      state.edgePoints -= 1;
+      render("edgePoints");
       renderLatestRolls();
     }
 
-    function rollAffinity(name) {
+    function rollAffinity(name, multiplier = 1) {
       const selectId = name.toLowerCase();
       const rank = document.getElementById(selectId).value;
       const sides = MAX_BY_AFFINITY[rank];
       const roll = rollDie(sides);
+      const result = roll * multiplier;
 
-      state.masteryRoll = 0;
+      state.edgeRoll = 0;
       state.lastAffinityId = selectId;
       clearCategoryHighlights(AFFINITY_IDS);
-      state.latestAffinityRoll = roll;
-      setButtonLabel(selectId, `${getRankedItemName(selectId)}: (${roll})`);
+      state.latestAffinityRoll = result;
+      setButtonLabel(selectId, `${getRankedItemName(selectId)}: (${result})`);
       setButtonActive(selectId, true);
       renderLatestRolls();
       scheduleAutoClear();
@@ -1544,7 +1604,7 @@
       const baseBonus = getProficiencyBonus(selectId);
       const signatureItemBonus = isTrueAffinity ? 0 : getSignatureItemBonus(selectId);
       const bonus = baseBonus + signatureItemBonus;
-      state.masteryRoll = 0;
+      state.edgeRoll = 0;
       let result = null;
       let rawText = "";
 
@@ -1575,13 +1635,81 @@
         return;
       }
 
-      // Rerolling clears the assigned Mastery bonus but does not refund
-      // the Mastery Points already spent to assign it.
-      state.masteryRoll = 0;
+      // Rerolling clears the assigned Edge bonus but does not refund
+      // the Edge already spent to assign it.
+      state.edgeRoll = 0;
       renderLatestRolls();
 
       rollAffinity(ITEM_NAMES[state.lastAffinityId]);
       rollProficiency(ITEM_NAMES[state.lastProficiencyId], state.lastProficiencyId);
+    }
+
+
+    function openAffinitySurgePopup(name) {
+      selectedAffinityForPopup = name;
+      document.getElementById("affinity-surge-title").textContent = name;
+      document.getElementById("affinity-surge-overlay").style.display = "flex";
+      document.getElementById("affinity-standard-roll-button").focus();
+    }
+
+    function closeAffinitySurgePopup() {
+      document.getElementById("affinity-surge-overlay").style.display = "none";
+      selectedAffinityForPopup = null;
+    }
+
+    function finishAffinityHold() {
+      if (affinityHoldTimer !== null) {
+        clearTimeout(affinityHoldTimer);
+        affinityHoldTimer = null;
+      }
+      if (affinityHoldTriggered) {
+        suppressNextAffinityClick = true;
+      }
+      affinityHoldButton = null;
+      affinityHoldTriggered = false;
+    }
+
+    function bindAffinityLongPress() {
+      for (const id of AFFINITY_IDS) {
+        const button = document.getElementById(`${id}-button`);
+        if (!button) continue;
+
+        button.addEventListener("pointerdown", (event) => {
+          if (event.button !== undefined && event.button !== 0) return;
+
+          affinityHoldButton = button;
+          affinityHoldTriggered = false;
+          affinityHoldStartX = event.clientX;
+          affinityHoldStartY = event.clientY;
+          if (affinityHoldTimer !== null) clearTimeout(affinityHoldTimer);
+
+          affinityHoldTimer = setTimeout(() => {
+            if (affinityHoldButton !== button) return;
+            affinityHoldTriggered = true;
+            openAffinitySurgePopup(ITEM_NAMES[id]);
+            affinityHoldTimer = null;
+          }, 1000);
+        });
+
+        button.addEventListener("pointermove", (event) => {
+          if (affinityHoldButton !== button || affinityHoldTimer === null) return;
+          const movedX = Math.abs(event.clientX - affinityHoldStartX);
+          const movedY = Math.abs(event.clientY - affinityHoldStartY);
+          if (movedX > 10 || movedY > 10) finishAffinityHold();
+        });
+
+        button.addEventListener("pointerup", finishAffinityHold);
+        button.addEventListener("pointercancel", finishAffinityHold);
+        button.addEventListener("lostpointercapture", finishAffinityHold);
+
+        button.addEventListener("click", (event) => {
+          if (suppressNextAffinityClick) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            suppressNextAffinityClick = false;
+          }
+        }, true);
+      }
     }
 
     function setHintsVisible(visible) {
@@ -1698,13 +1826,13 @@
       const spirit = document.getElementById("spirit").value;
       const technique = document.getElementById("technique").value;
     
-      state.hp = MAX_BY_AFFINITY[physicality];
-      state.spells = MAX_BY_AFFINITY[spirit];
-      state.techniquePoints = MAX_BY_AFFINITY[technique];
+      state.health = MAX_BY_AFFINITY[physicality];
+      state.surge = MAX_BY_AFFINITY[spirit];
+      state.edgePoints = MAX_BY_AFFINITY[technique];
     
-      render("hp");
-      render("spells");
-      render("techniquePoints");
+      render("health");
+      render("surge");
+      render("edgePoints");
     }
     
     function randomChoice(items) {
@@ -1790,9 +1918,9 @@
       // Feat selection is handled by the dropdown's onchange event.
     }
 
-    render("hp");
-    render("spells");
-    render("techniquePoints");
+    render("health");
+    render("surge");
+    render("edgePoints");
     renderLatestRolls();
     clearAllButtonStates();
     setHintsVisible(state.hintsVisible);
@@ -1802,6 +1930,32 @@
     bindFeatRadios();
     bindSelectionInstructions();
     updateFeatDisplay();
+    bindAffinityLongPress();
+
+    document.getElementById("affinity-standard-roll-button").addEventListener("click", () => {
+      if (!selectedAffinityForPopup) return;
+      const affinity = selectedAffinityForPopup;
+      closeAffinitySurgePopup();
+      rollAffinity(affinity);
+    });
+
+    document.getElementById("affinity-surge-button").addEventListener("click", () => {
+      if (!selectedAffinityForPopup || state.surge <= 0) return;
+      const affinity = selectedAffinityForPopup;
+      state.surge -= 1;
+      render("surge");
+      closeAffinitySurgePopup();
+      rollAffinity(affinity, 2);
+      saveSheetState();
+    });
+
+    document.getElementById("affinity-surge-overlay").addEventListener("click", (event) => {
+      if (event.target === event.currentTarget) closeAffinitySurgePopup();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeAffinitySurgePopup();
+    });
 
     if (restoredSheetState) {
       renderRestoredState();
