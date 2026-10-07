@@ -26,18 +26,6 @@
       font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
     
-    #page-background {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      opacity: 0.18;
-      pointer-events: none;
-      filter: saturate(0.9);
-    }
-    
     .wrap {
       max-width: 980px;
       margin: 0 auto;
@@ -164,6 +152,11 @@
       gap: 9px;
       flex-wrap: wrap;
       margin-top: 4px;
+    }
+
+    .settings-line-break {
+      flex-basis: 100%;
+      height: 0;
     }
 
     .button {
@@ -341,6 +334,7 @@
 
     details.adjust-sheet,
     details.level-up-sheet,
+    details.how-to-play-sheet,
     details.share-sheet,
     details.equipment-sheet {
       border: 1px solid var(--line);
@@ -351,6 +345,7 @@
 
     details.adjust-sheet > summary,
     details.level-up-sheet > summary,
+    details.how-to-play-sheet > summary,
     details.share-sheet > summary,
     details.equipment-sheet > summary {
       list-style: none;
@@ -362,6 +357,7 @@
 
     details.adjust-sheet > summary::-webkit-details-marker,
     details.level-up-sheet > summary::-webkit-details-marker,
+    details.how-to-play-sheet > summary::-webkit-details-marker,
     details.share-sheet > summary::-webkit-details-marker,
     details.equipment-sheet > summary::-webkit-details-marker {
       display: none;
@@ -659,8 +655,39 @@
   </style>
 </head>
 <body>
-  <div id="page-background" aria-hidden="true"></div>
   <div class="wrap">
+    <details class="panel how-to-play-sheet">
+      <summary>How to Play</summary>
+      <ol>
+        <li>State what you want to do.</li>
+        <li>GM tells you what to roll.</li>
+        <li>Decide if you want to Surge to double the result of your Affinity die.</li>
+        <li>Roll Affinity and Proficiency</li>
+        <li>Decide if you want to Edge to increase your final Total/Degree.</li>
+        <li>GM describes effects of your Action.</li>
+        <li>Repeat.</li>
+      </ol>
+    </details>
+
+    <details class="panel how-to-play-sheet">
+      <summary>Create your Character</summary>
+      <ol>
+        <li>Assign 1 Strong, 1 Average, and 1 Weak Affinity.</li>
+        <li>Assign 2 Strong, and 1 Weak Proficiency (all others Average).</li>
+        <li>Make up your Signature Item and choose which Proficiency it benefits.</li>
+        <li>Name your Character.</li>
+      </ol>
+      <div class="adjust-row">
+        <button class="button" type="button" id="hint-visibility-toggle-button" onclick="toggleHints()">
+          Hide Hints
+        </button>
+        <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
+          Hide Dropdowns
+        </button>
+        <button class="button" type="button" onclick="generateRandomCharacter()">Generate Random Character</button>
+      </div>
+    </details>
+
     <div class="panel">
       <h1>Name</h1>
       <div class="sheet-hint" id="name-hint">Get creative! Name your character anything you like!</div>
@@ -676,7 +703,7 @@
       <div class="sheet-hint" id="stats-hint">Default (maximum) values are determined automatically based on your Affinities, but Points will go down as you play. Health represent how much damage your character can take. Edge represents your character's ability to supplement luck with skill for better outcomes. Surge represents your character's inner strength, which can be expended to produce magical spells or other supernatural effects.</div>
       <div class="stats">
         <div class="stat">
-          <label for="health">Health</label>
+          <label for="health" id="health-stat-label">Health</label>
           <div class="stepper">
             <button type="button" aria-label="Decrease Health" onclick="changeValue('health', -1)">–</button>
             <span id="health">8</span>
@@ -685,7 +712,7 @@
         </div>
 
         <div class="stat">
-          <label for="edgePoints">Edge</label>
+          <label for="edgePoints" id="edge-stat-label">Edge</label>
           <div class="stepper">
             <button type="button" aria-label="Decrease Edge" onclick="changeValue('edgePoints', -1)">–</button>
             <span id="edgePoints">8</span>
@@ -694,7 +721,7 @@
         </div>
 
         <div class="stat">
-          <label for="surge">Surge</label>
+          <label for="surge" id="surge-stat-label">Surge</label>
           <div class="stepper">
             <button type="button" aria-label="Decrease Surge" onclick="changeValue('surge', -1)">–</button>
             <span id="surge">8</span>
@@ -706,7 +733,7 @@
 
     <div class="groups">
       <div class="panel">
-        <h2>Affinities</h2>
+        <h2 id="affinities-title">Affinities</h2>
         <div class="sheet-hint" id="affinity-hint">Affinities are styles or preferences for how your character approaches challenges. Physicality represents reliance on the body, often in a very simple or direct way. Technique represents reliance on practice, precision, and process. It encompasses both careful physical movements and precise, informed mental movements. Spirit represents reliance on strength of soul, willpower, even luck. It is the energy used to SURGE beyond normal limits, allowing the possibility of spectacular effects.<br>Hold Affinity to Surge.</div>
         <div class="selection-instruction" id="affinity-instruction">Select one each Strong, Average, Weak</div>
         <div class="list">
@@ -740,7 +767,7 @@
       </div>
 
       <div class="panel">
-        <h1>Roll Summary</h1>
+        <h1 id="roll-summary-title">Roll Summary</h1>
         <div class="sheet-hint" id="roll-summary-hint">Affinity: Result of your Affinity die roll. Strength of the Affinity determines number of sides on the die (4, 8, 12). Proficiency: Result of your Proficiency die roll. Any relevant modifiers to the Proficiency die are automatically applied before being displayed here. Edge: Tap here to spend Edge to improve your Total. Edge is automatically deducted when tapped in this way. Total: the sum of your Affinity + Proficiency + Edge. Degree: represents how much of an effect your action has. Degree increases with each full increment of 5 of your Total.</div>
         <div class="summary">
 <div class="summary-card">
@@ -754,7 +781,7 @@
           </div>
 
           <button class="summary-card edge-summary-button" id="edge-roll-button" type="button" onclick="addEdge()">
-            <div class="summary-label">Edge</div>
+            <div class="summary-label" id="edge-summary-label">Edge</div>
             <div class="summary-value" id="edge-roll-display">—</div>
           </button>
 
@@ -775,7 +802,7 @@
       </div>
 
       <div class="panel">
-        <h2>Proficiencies</h2>
+        <h2 id="proficiencies-title">Proficiencies</h2>
         <div class="selection-instruction" id="proficiency-instruction">Select any two Strong and any one Weak, all others remain Average</div>
         <div class="list proficiency-list">
           <div class="item proficiency-item">
@@ -900,7 +927,7 @@
       </div>
 
       <details class="equipment-sheet" open>
-        <summary>Equipment</summary>
+        <summary id="equipment-summary">Equipment</summary>
         <div class="equipment-body">
           <div>
             <strong>Starting Equipment</strong> - All characters start play with a unique Signature Item, the precise nature of which is determined by the player, and a Bag of Convenience.
@@ -977,32 +1004,26 @@
       </details>
 
       <details class="adjust-sheet" id="adjust-sheet" open>
-        <summary>Adjust Sheet</summary>
+        <summary>Sheet Settings</summary>
         <div class="adjust-body">
           <div class="adjust-field">
-            <label for="save-setting"><strong>Save Setting:</strong></label>
+            <label for="save-setting"><strong>On Page Refresh:</strong></label>
             <select class="sheet-select" id="save-setting" onchange="updateSaveSetting()">
-              <option value="preserve">Preserve current state</option>
-              <option value="reset" selected>Reset All on Page refresh</option>
+              <option value="preserve">Preserve State</option>
+              <option value="reset" selected>Reset All</option>
             </select>
           </div>
 
           <div class="adjust-row">
-            <button class="button" type="button" id="hint-visibility-toggle-button" onclick="toggleHints()">
-              Hide Hints
-            </button>
-            <button class="button" type="button" id="visibility-toggle-button" onclick="toggleSelectors()">
-              Hide Dropdowns
-            </button>
-            <button class="button" type="button" onclick="resetDropdowns()">Reset Dropdowns</button>
-            <button class="button" type="button" onclick="generateRandomCharacter()">Generate Random Character</button>
+            <button class="button" type="button" onclick="resetDropdowns()">Reset Dropdowns</button><div class="summary-line-break" aria-hidden="true"></div>
+            <button class="button" type="button" id="reduced-text-toggle-button" onclick="toggleReducedTextMode()">Reduced Text Mode</button>
+            <div class="settings-line-break" aria-hidden="true"></div>
           </div>
 
-          <div class="adjust-state" id="sheet-lock-state">Dropdowns are visible.</div>
 
           <div class="adjust-field">
-            <label for="auto-clear-seconds">Automatically clear rolls after ___ seconds</label>
-            <input id="auto-clear-seconds" type="number" min="0" step="1" value="0" onchange="updateAutoClearSeconds()" />
+            <label for="auto-clear-seconds">Automatically clear rolls after:</label>
+            <input id="auto-clear-seconds" type="number" min="0" step="1" value="0" onchange="updateAutoClearSeconds()" /> <span>seconds</span>
           </div>
 
           <hr class="adjust-divider" />
@@ -1012,14 +1033,7 @@
             <input id="active-color-picker" type="color" value="#dff5df" />
             <button class="button" type="button" onclick="setActiveColor()">Set Active Color</button>
           </div>
-
-          <div class="adjust-field">
-            <label for="background-upload">Background Image</label>
-            <input id="background-upload" type="file" accept="image/*" onchange="setBackgroundImage(event)" />
-            <button class="button" type="button" onclick="clearBackgroundImage()">Clear Background</button>
-          </div>
-          
-        </div>
+</div>
       </details>
 
       <details class="share-sheet">
@@ -1050,6 +1064,22 @@
       Strong: 12
     };
 
+    const REDUCED_ITEM_NAMES = {
+      physicality: "💪",
+      technique: "🧠",
+      spirit: "❤️",
+      offense: "⚔️",
+      defense: "🛡️",
+      athletics: "🏃",
+      awareness: "👁️",
+      persuasion: "🤝",
+      stealth: "🤫",
+      artifice: "🔨",
+      lifecraft: "🌱",
+      lore: "📖",
+      "true-affinity": "⭐"
+    };
+
     const ITEM_NAMES = {
       physicality: "Physicality",
       technique: "Technique",
@@ -1077,53 +1107,56 @@
     };
 
 
+    function pairKey(a, b) {
+      return [a, b].sort().join("|");
+    }
+
     const EPITHET_BY_STRONG_PROFICIENCIES = {
-      "offense|defense": { physicality: "Warrior", technique: "Duelist", spirit: "Battlemage" },
-      "offense|athletics": { physicality: "Berserker", technique: "Skirmisher", spirit: "War Dancer" },
-      "offense|stealth": { physicality: "Ambusher", technique: "Assassin", spirit: "Nightblade" },
-      "offense|awareness": { physicality: "Hunter", technique: "Marksman", spirit: "Spellhunter" },
-      "offense|persuasion": { physicality: "Warlord", technique: "Swashbuckler", spirit: "Hexer" },
-      "offense|lore": { physicality: "Monster Slayer", technique: "Strategist", spirit: "Warlock" },
-      "offense|artifice": { physicality: "Siegebreaker", technique: "Saboteur", spirit: "Battle Artificer" },
-      "offense|lifecraft": { physicality: "Ravager", technique: "Anatomist", spirit: "Bloodmage" },
-      "defense|athletics": { physicality: "Guardian", technique: "Sentinel", spirit: "Wardwalker" },
-      "defense|stealth": { physicality: "Survivor", technique: "Bodyguard", spirit: "Veilkeeper" },
-      "defense|awareness": { physicality: "Watchman", technique: "Protector", spirit: "Warder" },
-      "defense|persuasion": { physicality: "Champion", technique: "Peacekeeper", spirit: "Paladin" },
-      "defense|lore": { physicality: "Veteran", technique: "Tactician", spirit: "Abjurer" },
-      "defense|artifice": { physicality: "Fortifier", technique: "Armorer", spirit: "Runeguard" },
-      "defense|lifecraft": { physicality: "Caretaker", technique: "Physician", spirit: "Healer" },
-      "athletics|stealth": { physicality: "Prowler", technique: "Acrobat", spirit: "Shadowdancer" },
-      "athletics|awareness": { physicality: "Scout", technique: "Explorer", spirit: "Farstrider" },
-      "athletics|persuasion": { physicality: "Gladiator", technique: "Performer", spirit: "Herald" },
-      "athletics|lore": { physicality: "Delver", technique: "Archaeologist", spirit: "Planeswalker" },
-      "athletics|artifice": { physicality: "Builder", technique: "Engineer", spirit: "Shaper" },
-      "athletics|lifecraft": { physicality: "Beastmaster", technique: "Beast Rider", spirit: "Shapeshifter" },
-      "stealth|awareness": { physicality: "Stalker", technique: "Spy", spirit: "Shadowseer" },
-      "stealth|persuasion": { physicality: "Enforcer", technique: "Charlatan", spirit: "Beguiler" },
-      "stealth|lore": { physicality: "Treasure Hunter", technique: "Infiltrator", spirit: "Occultist" },
-      "stealth|artifice": { physicality: "Burglar", technique: "Thief", spirit: "Arcane Trickster" },
-      "stealth|lifecraft": { physicality: "Predator", technique: "Poisoner", spirit: "Skinchanger" },
-      "awareness|persuasion": { physicality: "Leader", technique: "Diplomat", spirit: "Oracle" },
-      "awareness|lore": { physicality: "Storykeeper", technique: "Scholar", spirit: "Diviner" },
-      "awareness|artifice": { physicality: "Prospector", technique: "Investigator", spirit: "Artificer" },
-      "awareness|lifecraft": { physicality: "Beast Whisperer", technique: "Diagnostician", spirit: "Empath" },
-      "persuasion|lore": { physicality: "Storyteller", technique: "Orator", spirit: "Prophet" },
-      "persuasion|artifice": { physicality: "Guildmaster", technique: "Merchant", spirit: "Enchanter" },
-      "persuasion|lifecraft": { physicality: "Animal Handler", technique: "Apothecary", spirit: "Witch" },
-      "lore|artifice": { physicality: "Craftmaster", technique: "Inventor", spirit: "Arcane Architect" },
-      "lore|lifecraft": { physicality: "Bonekeeper", technique: "Natural Philosopher", spirit: "Biomancer" },
-      "artifice|lifecraft": { physicality: "Fleshsmith", technique: "Chirurgeon", spirit: "Lifecrafter" }
+      [pairKey("offense", "defense")]: { physicality: "Warrior", technique: "Duelist", spirit: "Battlemage" },
+      [pairKey("offense", "athletics")]: { physicality: "Berserker", technique: "Skirmisher", spirit: "War Dancer" },
+      [pairKey("offense", "stealth")]: { physicality: "Ambusher", technique: "Assassin", spirit: "Nightblade" },
+      [pairKey("offense", "awareness")]: { physicality: "Hunter", technique: "Marksman", spirit: "Spellhunter" },
+      [pairKey("offense", "persuasion")]: { physicality: "Warlord", technique: "Swashbuckler", spirit: "Hexer" },
+      [pairKey("offense", "lore")]: { physicality: "Monster Slayer", technique: "Strategist", spirit: "Warlock" },
+      [pairKey("offense", "artifice")]: { physicality: "Siegebreaker", technique: "Saboteur", spirit: "Battle Artificer" },
+      [pairKey("offense", "lifecraft")]: { physicality: "Ravager", technique: "Anatomist", spirit: "Bloodmage" },
+      [pairKey("defense", "athletics")]: { physicality: "Guardian", technique: "Sentinel", spirit: "Wardwalker" },
+      [pairKey("defense", "stealth")]: { physicality: "Survivor", technique: "Bodyguard", spirit: "Veilkeeper" },
+      [pairKey("defense", "awareness")]: { physicality: "Watchman", technique: "Protector", spirit: "Warder" },
+      [pairKey("defense", "persuasion")]: { physicality: "Champion", technique: "Peacekeeper", spirit: "Paladin" },
+      [pairKey("defense", "lore")]: { physicality: "Veteran", technique: "Tactician", spirit: "Abjurer" },
+      [pairKey("defense", "artifice")]: { physicality: "Fortifier", technique: "Armorer", spirit: "Runeguard" },
+      [pairKey("defense", "lifecraft")]: { physicality: "Caretaker", technique: "Physician", spirit: "Healer" },
+      [pairKey("athletics", "stealth")]: { physicality: "Prowler", technique: "Acrobat", spirit: "Shadowdancer" },
+      [pairKey("athletics", "awareness")]: { physicality: "Scout", technique: "Explorer", spirit: "Farstrider" },
+      [pairKey("athletics", "persuasion")]: { physicality: "Gladiator", technique: "Performer", spirit: "Herald" },
+      [pairKey("athletics", "lore")]: { physicality: "Delver", technique: "Archaeologist", spirit: "Planeswalker" },
+      [pairKey("athletics", "artifice")]: { physicality: "Builder", technique: "Engineer", spirit: "Shaper" },
+      [pairKey("athletics", "lifecraft")]: { physicality: "Beastmaster", technique: "Beast Rider", spirit: "Shapeshifter" },
+      [pairKey("stealth", "awareness")]: { physicality: "Stalker", technique: "Spy", spirit: "Shadowseer" },
+      [pairKey("stealth", "persuasion")]: { physicality: "Enforcer", technique: "Charlatan", spirit: "Beguiler" },
+      [pairKey("stealth", "lore")]: { physicality: "Treasure Hunter", technique: "Infiltrator", spirit: "Occultist" },
+      [pairKey("stealth", "artifice")]: { physicality: "Burglar", technique: "Thief", spirit: "Arcane Trickster" },
+      [pairKey("stealth", "lifecraft")]: { physicality: "Predator", technique: "Poisoner", spirit: "Skinchanger" },
+      [pairKey("awareness", "persuasion")]: { physicality: "Leader", technique: "Diplomat", spirit: "Oracle" },
+      [pairKey("awareness", "lore")]: { physicality: "Storykeeper", technique: "Scholar", spirit: "Diviner" },
+      [pairKey("awareness", "artifice")]: { physicality: "Prospector", technique: "Investigator", spirit: "Artificer" },
+      [pairKey("awareness", "lifecraft")]: { physicality: "Beast Whisperer", technique: "Diagnostician", spirit: "Empath" },
+      [pairKey("persuasion", "lore")]: { physicality: "Storyteller", technique: "Orator", spirit: "Prophet" },
+      [pairKey("persuasion", "artifice")]: { physicality: "Guildmaster", technique: "Merchant", spirit: "Enchanter" },
+      [pairKey("persuasion", "lifecraft")]: { physicality: "Animal Handler", technique: "Apothecary", spirit: "Witch" },
+      [pairKey("lore", "artifice")]: { physicality: "Craftmaster", technique: "Inventor", spirit: "Arcane Architect" },
+      [pairKey("lore", "lifecraft")]: { physicality: "Bonekeeper", technique: "Natural Philosopher", spirit: "Biomancer" },
+      [pairKey("artifice", "lifecraft")]: { physicality: "Fleshsmith", technique: "Chirurgeon", spirit: "Lifecrafter" }
     };
 
     function getRandomCharacterEpithet() {
       const strongIds = PROFICIENCY_IDS
-        .filter((id) => document.getElementById(id)?.value === "Strong")
-        .sort();
+        .filter((id) => document.getElementById(id)?.value === "Strong");
 
       if (strongIds.length !== 2) return "";
 
-      const key = strongIds.join("|");
+      const key = pairKey(strongIds[0], strongIds[1]);
       const affinityId = AFFINITY_IDS.find((id) => document.getElementById(id)?.value === "Strong");
       return affinityId ? EPITHET_BY_STRONG_PROFICIENCIES[key]?.[affinityId] || "" : "";
     }
@@ -1143,6 +1176,7 @@
       selectorsVisible: true,
       hintsVisible: true,
       proficiencyBonusesVisible: false,
+      reducedTextMode: false,
       autoClearSeconds: 0,
       selectedFeatKey: null,
       featUsed: false,
@@ -1230,8 +1264,41 @@
       return "";
     }
 
+    function getDisplayItemName(id) {
+      return state.reducedTextMode ? (REDUCED_ITEM_NAMES[id] || ITEM_NAMES[id]) : ITEM_NAMES[id];
+    }
+
     function getRankedItemName(id) {
-      return `${getRankPrefix(id)}${ITEM_NAMES[id]}`;
+      return `${getRankPrefix(id)}${getDisplayItemName(id)}`;
+    }
+
+    function applyReducedTextMode() {
+      document.getElementById("reduced-text-toggle-button").textContent =
+        state.reducedTextMode ? "Normal Text Mode" : "Reduced Text Mode";
+
+      document.getElementById("edge-stat-label").textContent = state.reducedTextMode ? "🎯" : "Edge";
+      document.getElementById("edge-summary-label").textContent = state.reducedTextMode ? "🎯" : "Edge";
+      document.getElementById("health-stat-label").textContent = state.reducedTextMode ? "🩸" : "Health";
+      document.getElementById("surge-stat-label").textContent = state.reducedTextMode ? "⚡" : "Surge";
+      document.getElementById("affinities-title").textContent = state.reducedTextMode ? "✨" : "Affinities";
+      document.getElementById("proficiencies-title").textContent = state.reducedTextMode ? "🏅" : "Proficiencies";
+      document.getElementById("equipment-summary").textContent = state.reducedTextMode ? "🧰" : "Equipment";
+      document.getElementById("roll-summary-title").textContent = state.reducedTextMode ? "🎲🎲" : "Roll Summary";
+      document.getElementById("affinity-surge-button").textContent = state.reducedTextMode ? "⚡" : "Surge!";
+
+      for (const id of ALL_IDS) {
+        const isActiveAffinity = state.lastAffinityId === id && state.latestAffinityRoll !== null;
+        const isActiveProficiency = state.lastProficiencyId === id && state.latestProficiencyRoll !== null;
+        if (!isActiveAffinity && !isActiveProficiency) {
+          setButtonLabel(id, getRankedItemName(id));
+        }
+      }
+    }
+
+    function toggleReducedTextMode() {
+      state.reducedTextMode = !state.reducedTextMode;
+      applyReducedTextMode();
+      saveSheetState();
     }
 
     function setButtonActive(id, active) {
@@ -1291,28 +1358,6 @@
       document.documentElement.style.setProperty("--active-roll-color", color);
       document.documentElement.style.setProperty("--active-roll-border", color);
     }
-
-    function setBackgroundImage(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-    
-      const reader = new FileReader();
-      reader.onload = () => {
-        const background = document.getElementById("page-background");
-        background.style.backgroundImage = `url("${reader.result}")`;
-      };
-      reader.readAsDataURL(file);
-    }
-    
-    function clearBackgroundImage() {
-      const background = document.getElementById("page-background");
-      background.style.backgroundImage = "none";
-    
-      const input = document.getElementById("background-upload");
-      if (input) input.value = "";
-    }
-    
-
     function getMax(id) {
       if (id === "health") {
         const affinity = document.getElementById("physicality").value;
@@ -1419,7 +1464,7 @@
 
       const values = {};
       document.querySelectorAll("input, select, textarea").forEach((element) => {
-        if (!element.id || element.id === "background-upload" || element.id === "save-setting") return;
+        if (!element.id || element.id === "save-setting") return;
         if (element.type === "file") return;
         values[element.id] = element.type === "checkbox" || element.type === "radio"
           ? element.checked
@@ -1433,13 +1478,11 @@
           openDetails[key] = details.open;
         });
 
-      const background = document.getElementById("page-background");
       const snapshot = {
         state: { ...state },
         values,
         openDetails,
-        activeColor: document.getElementById("active-color-picker")?.value || "#dff5df",
-        backgroundImage: background?.style.backgroundImage || "none"
+        activeColor: document.getElementById("active-color-picker")?.value || "#dff5df"
       };
 
       localStorage.setItem(SHEET_STATE_KEY, JSON.stringify(snapshot));
@@ -1484,11 +1527,6 @@
           document.documentElement.style.setProperty("--active-roll-border", snapshot.activeColor);
         }
 
-        if (snapshot.backgroundImage) {
-          const background = document.getElementById("page-background");
-          if (background) background.style.backgroundImage = snapshot.backgroundImage;
-        }
-
         if (snapshot.openDetails) {
           document.querySelectorAll("details[id], details.adjust-sheet, details.level-up-sheet, details.equipment-sheet, details.share-sheet")
             .forEach((details, index) => {
@@ -1524,6 +1562,7 @@
       setProficiencyBonusesVisible(state.proficiencyBonusesVisible);
       updateSelectionInstructions();
       updateFeatDisplay();
+      applyReducedTextMode();
     }
 
     document.addEventListener("input", (event) => {
@@ -1652,7 +1691,9 @@
 
     function openAffinitySurgePopup(name) {
       selectedAffinityForPopup = name;
-      document.getElementById("affinity-surge-title").textContent = name;
+      const affinityId = AFFINITY_IDS.find((id) => ITEM_NAMES[id] === name);
+      document.getElementById("affinity-surge-title").textContent =
+        state.reducedTextMode && affinityId ? REDUCED_ITEM_NAMES[affinityId] : name;
       document.getElementById("affinity-surge-overlay").style.display = "flex";
       document.getElementById("affinity-standard-roll-button").focus();
     }
@@ -1742,9 +1783,6 @@
 
       document.getElementById("visibility-toggle-button").textContent =
         visible ? "Hide Dropdowns" : "Show Dropdowns";
-
-      document.getElementById("sheet-lock-state").textContent =
-        visible ? "Dropdowns are visible." : "Dropdowns are hidden.";
     }
 
     function toggleSelectors() {
@@ -1889,7 +1927,7 @@
       // Set the epithet immediately from the Strong Affinity and the two Strong Proficiencies
       // chosen above, without depending on a subsequent DOM event.
       const strongAffinityId = randomizedAffinities[0];
-      const epithetKey = [...strongIds].sort().join("|");
+      const epithetKey = pairKey(strongIds[0], strongIds[1]);
       const epithet = EPITHET_BY_STRONG_PROFICIENCIES[epithetKey]?.[strongAffinityId] || "";
       document.getElementById("character-epithet").value = epithet;
 
