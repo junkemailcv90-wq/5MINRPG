@@ -1596,7 +1596,8 @@
       state.lastAffinityId = selectId;
       clearCategoryHighlights(AFFINITY_IDS);
       state.latestAffinityRoll = result;
-      setButtonLabel(selectId, `${getRankedItemName(selectId)}: (${result})`);
+      const rollDisplay = multiplier === 1 ? `(${roll})` : `(${roll}) × ${multiplier}`;
+      setButtonLabel(selectId, `${getRankedItemName(selectId)}: ${rollDisplay}`);
       setButtonActive(selectId, true);
       renderLatestRolls();
       scheduleAutoClear();
